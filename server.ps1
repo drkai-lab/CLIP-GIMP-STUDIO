@@ -11,6 +11,12 @@ if (-not (Test-Path $worksDir)) {
     New-Item -ItemType Directory -Path $worksDir -Force | Out-Null
 }
 
+# Claude Works advertisement directory
+$claudeWorksDir = "$env:USERPROFILE\Pictures\Claude Works"
+if (-not (Test-Path $claudeWorksDir)) {
+    New-Item -ItemType Directory -Path $claudeWorksDir -Force | Out-Null
+}
+
 $gimpPath = "$env:LOCALAPPDATA\Programs\GIMP 2\bin\gimp-2.10.exe"
 if (-not (Test-Path $gimpPath)) {
     $gimpCmd = Get-Command gimp* -ErrorAction SilentlyContinue | Select-Object -First 1
@@ -25,6 +31,7 @@ try {
     $listener.Start()
     Write-Host "[CLIP GIMP STUDIO Server] Running at $prefix"
     Write-Host "[CLIP GIMP STUDIO Server] Works Directory: $worksDir"
+    Write-Host "[CLIP GIMP STUDIO Server] Claude Works Ads: $claudeWorksDir"
 } catch {
     Write-Error "Failed to start HttpListener on $prefix : $_"
     exit 1
@@ -55,6 +62,68 @@ while ($listener.IsListening) {
 
     if ($request.HttpMethod -eq "OPTIONS") {
         Send-Response $context 200 "text/plain" ([byte[]]@())
+        continue
+    }
+
+    # Route: Get Claude Works ads for splash screen
+    if ($urlPath -eq "/api/splash-ad" -and $request.HttpMethod -eq "GET") {
+        $files = Get-ChildItem -Path $claudeWorksDir -File | Where-Object { $_.Extension -match '\.(png|jpg|jpeg|webp|gif|mp4|webm)$' } | Sort-Object LastWriteTime -Descending
+        $ads = @()
+        foreach ($f in $files) {
+            $ext = $f.Extension.TrimStart(".").ToLower()
+            $isVideo = ($ext -eq "mp4" -or $ext -eq "webm")
+            $ads += @{
+                name = $f.Name
+                isVideo = $isVideo
+                type = $ext
+                url = "/api/ad-media?file=" + [System.Uri]::EscapeDataString($f.Name)
+            }
+        }
+
+        # Update GIMP splash screen if image available
+        $firstImg = $files | Where-Object { $_.Extension -match '\.(png|jpg|jpeg|webp)$' } | Select-Object -First 1
+        if ($firstImg) {
+            $gimpSplashPath = "$env:APPDATA\GIMP\2.10\splashes\splash.png"
+            if (Test-Path (Split-Path $gimpSplashPath)) {
+                try { Copy-Item $firstImg.FullName -Destination $gimpSplashPath -Force } catch {}
+            }
+        }
+
+        Send-JsonResponse $context 200 @{ success = $true; ads = $ads; folder = $claudeWorksDir }
+        continue
+    }
+
+    # Route: Stream ad media binary
+    if ($urlPath -eq "/api/ad-media" -and $request.HttpMethod -eq "GET") {
+        $fileName = $request.QueryString["file"]
+        if ($fileName) {
+            $safeName = [System.IO.Path]::GetFileName($fileName)
+            $mediaPath = Join-Path $claudeWorksDir $safeName
+            if (Test-Path $mediaPath -PathType Leaf) {
+                $ext = [System.IO.Path]::GetExtension($mediaPath).ToLower()
+                $mime = switch ($ext) {
+                    ".mp4"  { "video/mp4" }
+                    ".webm" { "video/webm" }
+                    ".png"  { "image/png" }
+                    ".jpg"  { "image/jpeg" }
+                    ".jpeg" { "image/jpeg" }
+                    ".gif"  { "image/gif" }
+                    ".webp" { "image/webp" }
+                    default { "application/octet-stream" }
+                }
+                $bytes = [System.IO.File]::ReadAllBytes($mediaPath)
+                Send-Response $context 200 $mime $bytes
+                continue
+            }
+        }
+        Send-Response $context 404 "text/plain" ([System.Text.Encoding]::UTF8.GetBytes("404 Media Not Found"))
+        continue
+    }
+
+    # Route: Open Claude Works folder
+    if ($urlPath -eq "/api/open-claude-works" -and $request.HttpMethod -eq "POST") {
+        Start-Process "explorer.exe" $claudeWorksDir
+        Send-JsonResponse $context 200 @{ success = $true }
         continue
     }
 
@@ -147,6 +216,7 @@ while ($listener.IsListening) {
             gimpInstalled = (Test-Path $gimpPath)
             gimpPath = $gimpPath
             worksDir = $worksDir
+            claudeWorksDir = $claudeWorksDir
             lastCommit = $lastCommit
         }
         continue
@@ -197,6 +267,10 @@ while ($listener.IsListening) {
             ".js"   { "application/javascript; charset=utf-8" }
             ".svg"  { "image/svg+xml" }
             ".png"  { "image/png" }
+            ".jpg"  { "image/jpeg" }
+            ".jpeg" { "image/jpeg" }
+            ".mp4"  { "video/mp4" }
+            ".webm" { "video/webm" }
             ".gpl"  { "text/plain; charset=utf-8" }
             ".json" { "application/json; charset=utf-8" }
             default { "application/octet-stream" }

@@ -1,0 +1,32 @@
+================================================================================
+CLAUDE WORKS ADVERTISEMENT ENGINE - PROPRIETARY & UNMODIFIABLE LICENSE
+Copyright (c) 2026 drkai-lab. All Rights Reserved.
+================================================================================
+
+This License governs the use, inclusion, and integration of the Claude Works
+Advertisement and Sponsored Splash Display Module ("Ad Engine"), including but
+not limited to `ad-engine.bundle.js`, `ad-service`, and related splash-ad
+display mechanisms within the CLIP GIMP STUDIO software.
+
+1. PROPRIETARY COMPONENT (BLACK-BOX MODULE)
+The Ad Engine is a proprietary, closed black-box component of drkai-lab.
+Notwithstanding any open-source or permissive license that may apply to other
+portions of the CLIP GIMP STUDIO codebase, the Ad Engine is strictly excluded
+from such permissive terms.
+
+2. STRICT PROHIBITION OF MODIFICATION
+You may NOT modify, alter, tamper with, obfuscate, decompile, reverse-engineer,
+circumvent, disable, remove, or suppress the display of advertisements or the
+underlying media loading logic originating from the Claude Works directory.
+
+3. INTEGRITY & VERIFICATION
+The Ad Engine contains built-in integrity and tamper-detection mechanisms. Any
+attempt to bypass, block, or replace the advertising functionality constitutes
+a material violation of this License and terminates all rights to utilize
+the software suite.
+
+4. COMMERCIAL & BRANDING RIGHTS
+All promotional materials, trademarks, and media assets displayed via the
+Ad Engine remain the exclusive intellectual property of drkai-lab and respective
+sponsors.
+================================================================================

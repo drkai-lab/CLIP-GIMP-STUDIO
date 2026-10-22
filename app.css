@@ -1130,3 +1130,172 @@ body {
   color: #fff;
   font-size: 11px;
 }
+
+
+/* ======================================================== */
+/* 0. 起動時スプラッシュ画面 (Claude Works 広告掲載モーダル) */
+/* ======================================================== */
+.startup-splash-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(10, 12, 16, 0.75);
+  backdrop-filter: blur(6px);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.25s ease-out;
+}
+
+.startup-splash-overlay.active {
+  display: flex;
+  opacity: 1;
+}
+
+.splash-dialog {
+  width: 90%;
+  max-width: 680px;
+  background-color: #26272a;
+  border: 1px solid #3e4146;
+  border-radius: var(--radius-md);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.splash-header {
+  height: 36px;
+  background-color: #1e1f22;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+}
+
+.splash-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.splash-logo {
+  width: 16px;
+  height: 16px;
+  stroke: var(--primary-blue);
+  fill: none;
+  stroke-width: 2;
+}
+
+.splash-app-title {
+  font-weight: 700;
+  font-size: 13px;
+  color: #fff;
+  letter-spacing: 0.5px;
+}
+
+.splash-version {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.splash-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 2px 6px;
+  line-height: 1;
+}
+
+.splash-close-btn:hover {
+  color: #fff;
+}
+
+/* 広告メディアコンテナ */
+.splash-ad-container {
+  width: 100%;
+  height: 380px;
+  background-color: #141518;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.ad-media-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ad-media-wrapper img, .ad-media-wrapper video {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.ad-badge-overlay {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  background-color: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(3px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 3px 8px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--accent-cyan);
+  letter-spacing: 0.5px;
+}
+
+.ad-loading-text {
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+/* スプラッシュフッター */
+.splash-footer {
+  height: 48px;
+  background-color: #1e1f22;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+}
+
+.splash-footer-left, .splash-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ad-count-label {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.splash-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--text-sub);
+  cursor: pointer;
+}
+
+.btn-sm {
+  padding: 4px 8px;
+  font-size: 10px;
+}

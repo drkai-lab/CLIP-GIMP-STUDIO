@@ -1479,3 +1479,24 @@ function escapeHtml(str) {
     '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
   }[tag] || tag));
 }
+
+
+// ==========================================
+// スプラッシュ画面制御
+// ==========================================
+function closeSplashScreen() {
+  const overlay = document.getElementById('startup-splash-overlay');
+  if (overlay) {
+    overlay.classList.remove('active');
+  }
+}
+
+function openSplashScreen() {
+  const overlay = document.getElementById('startup-splash-overlay');
+  if (overlay) {
+    overlay.classList.add('active');
+    if (window.ClaudeWorksAdEngine) {
+      window.ClaudeWorksAdEngine.init();
+    }
+  }
+}

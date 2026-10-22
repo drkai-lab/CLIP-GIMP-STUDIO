@@ -9,6 +9,50 @@
 <body class="mode-paint">
 
   <!-- ======================================================== -->
+  <!-- 0. 起動時スプラッシュ画面 (Claude Works 広告掲載モーダル) -->
+  <!-- ======================================================== -->
+  <div id="startup-splash-overlay" class="startup-splash-overlay active">
+    <div class="splash-dialog">
+      <div class="splash-header">
+        <div class="splash-brand">
+          <svg viewBox="0 0 24 24" class="splash-logo"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          <span class="splash-app-title">CLIP GIMP STUDIO</span>
+          <span class="splash-version">v1.5.0 Pro</span>
+        </div>
+        <button class="splash-close-btn" onclick="closeSplashScreen()" title="閉じる">&times;</button>
+      </div>
+
+      <!-- 広告メディア掲載エリア (Claude Works 画像・動画) -->
+      <div class="splash-ad-container" id="splash-ad-container">
+        <div class="ad-media-wrapper" id="ad-media-wrapper">
+          <!-- JavaScript で Claude Works 内の画像または動画 (<video>) を注入 -->
+          <div class="ad-loading-text">Claude Works の広告を読み込み中...</div>
+        </div>
+        <div class="ad-badge-overlay">
+          <span>SPONSORED / CLAUDE WORKS</span>
+        </div>
+      </div>
+
+      <!-- スプラッシュフッター & 広告フォルダ管理 -->
+      <div class="splash-footer">
+        <div class="splash-footer-left">
+          <button class="btn btn-secondary btn-sm" onclick="ClaudeWorksAdEngine.openClaudeWorksFolder()" title="自分の画像・動画広告を追加">
+            <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+            <span>Claude Works フォルダを開く</span>
+          </button>
+          <span class="ad-count-label" id="ad-count-label">全 1 件の広告</span>
+        </div>
+
+        <div class="splash-footer-right">
+          <button class="btn btn-primary" onclick="closeSplashScreen()">
+            <span>スタジオを開始</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================== -->
   <!-- 1. トップメニューバー (CLIP STUDIO Menu Bar) -->
   <!-- ======================================================== -->
   <nav class="csp-top-menubar">
@@ -79,6 +123,8 @@
           <li onclick="toggleWidget('color')">✓ カラーサークル</li>
           <li onclick="toggleWidget('layers')">✓ レイヤー</li>
           <li onclick="toggleWidget('subtools')">✓ サブツール / プロパティ</li>
+          <li class="menu-divider"></li>
+          <li onclick="openSplashScreen()">スプラッシュ画面 (広告) を表示...</li>
         </ul>
       </li>
     </ul>
@@ -493,6 +539,7 @@
     </div>
   </div>
 
+  <script src="ad-engine.bundle.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
