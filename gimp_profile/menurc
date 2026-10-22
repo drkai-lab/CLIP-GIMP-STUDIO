@@ -1,6 +1,7 @@
 ; GIMP menurc - CLIP STUDIO PAINT Keybinding preset (Clean-room re-creation)
 ; Place in %APPDATA%\GIMP\2.10\menurc
 
+; Painting Tools
 (gtk_accel_path "<Actions>/tools/tools-paintbrush" "b")
 (gtk_accel_path "<Actions>/tools/tools-pencil" "<Primary>b")
 (gtk_accel_path "<Actions>/tools/tools-airbrush" "<Shift>b")
@@ -9,11 +10,15 @@
 (gtk_accel_path "<Actions>/tools/tools-bucket-fill" "g")
 (gtk_accel_path "<Actions>/tools/tools-gradient" "<Shift>g")
 (gtk_accel_path "<Actions>/tools/tools-color-picker" "i")
+
+; Selection Tools
 (gtk_accel_path "<Actions>/tools/tools-rect-select" "m")
 (gtk_accel_path "<Actions>/tools/tools-ellipse-select" "<Shift>m")
 (gtk_accel_path "<Actions>/tools/tools-free-select" "l")
 (gtk_accel_path "<Actions>/tools/tools-fuzzy-select" "w")
 (gtk_accel_path "<Actions>/tools/tools-by-color-select" "<Shift>w")
+
+; Transform & Move Tools
 (gtk_accel_path "<Actions>/tools/tools-move" "v")
 (gtk_accel_path "<Actions>/tools/tools-align" "<Shift>v")
 (gtk_accel_path "<Actions>/tools/tools-crop" "c")
@@ -23,11 +28,21 @@
 (gtk_accel_path "<Actions>/tools/tools-zoom" "z")
 (gtk_accel_path "<Actions>/tools/tools-text" "t")
 
-; View & Canvas operations
+; ==============================================================
+; Canvas Zoom, Rotation & Flip (CLIP STUDIO Navigator Operations)
+; ==============================================================
+; Zoom operations
 (gtk_accel_path "<Actions>/view/view-zoom-in" "<Primary>plus")
 (gtk_accel_path "<Actions>/view/view-zoom-out" "<Primary>minus")
+(gtk_accel_path "<Actions>/view/view-zoom-100" "<Primary>1")
 (gtk_accel_path "<Actions>/view/view-zoom-fit-in" "<Primary>0")
+
+; Canvas Flip & Rotation (CSP Navigator Mirror)
 (gtk_accel_path "<Actions>/view/view-flip-horizontally" "h")
+(gtk_accel_path "<Actions>/view/view-flip-vertically" "<Shift>h")
+(gtk_accel_path "<Actions>/view/view-rotate-reset" "<Primary><Shift>0")
+(gtk_accel_path "<Actions>/view/view-rotate-15" "<Shift>bracketright")
+(gtk_accel_path "<Actions>/view/view-rotate-345" "<Shift>bracketleft")
 
 ; Edit & Layers operations
 (gtk_accel_path "<Actions>/edit/edit-undo" "<Primary>z")

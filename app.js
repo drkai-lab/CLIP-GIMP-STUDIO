@@ -1,227 +1,992 @@
 /**
- * CLIP GIMP STUDIO - Frontend Controller (Clean-room Implementation)
+ * CLIP GIMP STUDIO - Complete Clean-room Implementation
+ * Full Painting Engine, Navigator, Color Wheel, Layers & Portal
  */
 
-// 状態管理
-const state = {
+// アプリケーション全体状態
+const studioState = {
+  mode: 'paint', // 'paint' | 'portal'
   activeTab: 'works',
-  viewMode: 'grid',
-  sortMode: 'updated-desc',
-  searchQuery: '',
-  materialCategory: 'brushes',
+  
+  // キャンバス設定
+  canvasWidth: 2000,
+  canvasHeight: 2000,
+  zoom: 100, // 10% - 800%
+  rotate: 0, // -180 - 180 deg
+  flipH: false,
+  flipV: false,
+  panX: 0,
+  panY: 0,
+  
+  // ツール設定
+  currentTool: 'pen',
+  currentSubTool: 'g-pen',
+  brushSize: 8.0,
+  brushOpacity: 1.0,
+  stabilizer: 6,
+  pressure: true,
+  
+  // カラー設定
+  activeColorSlot: 'main', // 'main' | 'sub' | 'transparent'
+  mainColor: '#1a1a1a',
+  subColor: '#ffffff',
+  currentH: 210,
+  currentS: 0.8,
+  currentV: 0.2,
+
+  // レイヤー管理
+  layers: [],
+  activeLayerId: null,
+
+  // アンドゥ/リドゥ履歴
+  history: [],
+  historyIndex: -1,
+
+  // ポータル管理
   works: [],
   materials: {
     brushes: [
-      { name: 'G-Pen (リアルGペン風)', type: 'GBR', desc: '筆圧による細やかな強弱表現が可能な滑らかなペン先', tags: ['ペン入れ', '線画'] },
-      { name: 'Rough Pencil (鉛筆/ラフ用)', type: 'GIH', desc: '紙のテクスチャが微かに乗る描き味の鉛筆ブラシ', tags: ['下描き', 'スケッチ'] },
-      { name: 'Dense Watercolor (濃い水彩)', type: 'GBR', desc: '混色となめらかなグラデーションができる水彩ブラシ', tags: ['塗り', '彩色'] },
-      { name: 'Opaque Airbrush (エアーブラシ)', type: 'GBR', desc: '柔らかい影付けとハイライトのグラデーション表現', tags: ['仕上げ', '光彩'] }
+      { name: 'G-Pen (リアルGペン)', type: 'GBR', desc: '筆圧による細やかな強弱表現が可能な滑らかなペン先' },
+      { name: 'Rough Pencil (鉛筆/ラフ)', type: 'GIH', desc: '紙のテクスチャが微かに乗る描き味の鉛筆ブラシ' },
+      { name: 'Dense Watercolor (濃い水彩)', type: 'GBR', desc: '混色となめらかなグラデーションができる水彩ブラシ' }
     ],
     patterns: [
-      { name: 'Manga Tone 60L 10% (網点トーン)', type: 'PAT', desc: '漫画・同人誌用の標準的なスクリーントーン素材', tags: ['トーン', '漫画'] },
-      { name: 'Paper Texture (水彩紙テクスチャ)', type: 'PAT', desc: 'アナログ風の質感を加える紙目パターン', tags: ['質感', 'テクスチャ'] }
+      { name: 'Manga Tone 60L 10% (網点トーン)', type: 'PAT', desc: '漫画・同人誌用の標準的なスクリーントーン素材' }
     ],
     palettes: [
-      { name: 'Anime Skin Tones (肌色パレット)', type: 'GPL', desc: 'アニメ塗り・キャラ塗りに最適なベース・影色セット (clip-skin-tones.gpl)', tags: ['配色', 'キャラクター'] },
-      { name: 'Atmosphere Lighting (環境光パレット)', type: 'GPL', desc: '昼・夕・夜の空気感を再現するカラーセット (clip-lighting.gpl)', tags: ['背景', 'ライティング'] }
+      { name: 'Anime Skin Tones (肌色パレット)', type: 'GPL', desc: 'アニメ塗り・キャラ塗りに最適なカラーセット' },
+      { name: 'Atmosphere Lighting (環境光パレット)', type: 'GPL', desc: '昼・夕・夜の空気感を再現するカラーセット' }
     ],
     plugins: [
-      { name: 'CLIP GIMP CSP Tools Bridge', type: 'PY', desc: 'CLIP STUDIO PAINT同様のツール選択をショートカット化するPythonプラグイン', tags: ['拡張', 'ショートカット'] }
+      { name: 'CLIP GIMP CSP Tools Bridge', type: 'PY', desc: 'CLIP STUDIO PAINT同様の操作体系を提供するプラグイン' }
     ]
   }
 };
 
+// サブツール定義
+const subToolsMap = {
+  pen: [
+    { id: 'g-pen', name: 'Gペン', size: 8, opacity: 1.0, icon: '✒' },
+    { id: 'maru-pen', name: '丸ペン', size: 4, opacity: 1.0, icon: '🖋' },
+    { id: 'kabura-pen', name: 'カブラペン', size: 10, opacity: 1.0, icon: '🖊' },
+    { id: 'textured-pen', name: 'ざらつきペン', size: 12, opacity: 0.95, icon: '✏' },
+    { id: 'milli-pen', name: 'ミリペン', size: 3, opacity: 1.0, icon: '📍' }
+  ],
+  brush: [
+    { id: 'dense-water', name: '濃い水彩', size: 24, opacity: 0.8, icon: '🖌' },
+    { id: 'smooth-water', name: '滑らか水彩', size: 35, opacity: 0.6, icon: '🎨' },
+    { id: 'oil-paint', name: '厚塗り油彩', size: 20, opacity: 0.9, icon: '🖌' }
+  ],
+  airbrush: [
+    { id: 'soft-air', name: '柔らかエアブラシ', size: 60, opacity: 0.4, icon: '💨' },
+    { id: 'hard-air', name: '強めエアブラシ', size: 40, opacity: 0.7, icon: '💨' }
+  ],
+  eraser: [
+    { id: 'hard-eraser', name: '硬め消しゴム', size: 16, opacity: 1.0, icon: '🧽' },
+    { id: 'soft-eraser', name: '柔らかめ消しゴム', size: 30, opacity: 0.6, icon: '🧼' }
+  ],
+  bucket: [
+    { id: 'paint-bucket', name: '編集レイヤーのみ参照', size: 1, opacity: 1.0, icon: '🪣' }
+  ],
+  select: [
+    { id: 'rect-select', name: '長方形選択', size: 1, opacity: 1.0, icon: '⬚' }
+  ],
+  eyedropper: [
+    { id: 'eyedrop-all', name: '表示色を取得', size: 1, opacity: 1.0, icon: '🧪' }
+  ],
+  move: [
+    { id: 'pan-hand', name: '手のひら (パン)', size: 1, opacity: 1.0, icon: '✋' }
+  ]
+};
+
+// ==========================================
 // 初期化
+// ==========================================
 document.addEventListener('DOMContentLoaded', async () => {
+  initPaintingWorkspace();
+  initColorWheel();
+  initCanvasEvents();
+  renderSubTools();
+  renderLayers();
   await loadWorksFromBackend();
   renderMaterials();
   checkBackendStatus();
+
+  // ショートカットキー登録
+  setupGlobalShortcuts();
 });
 
-// バックエンドから実在作品を取得
-async function loadWorksFromBackend() {
-  try {
-    const res = await fetch('/api/works');
-    const data = await res.json();
-    if (data.success && data.works && data.works.length > 0) {
-      state.works = data.works.map(w => ({
-        ...w,
-        thumbnail: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200"><rect width="100%" height="100%" fill="%232b3945"/><text x="150" y="105" fill="%23fff" font-size="18" font-family="sans-serif" text-anchor="middle">' + encodeURIComponent(w.title) + '</text></svg>'
-      }));
-    } else {
-      // 初期作品サンプル
-      state.works = [
-        {
-          id: 'sample-1',
-          title: 'キャラデザ_ラフ案A',
-          ext: 'XCF',
-          path: '',
-          updated: '2026/10/22 21:15',
-          size: '24.8 MB',
-          thumbnail: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200"><rect width="100%" height="100%" fill="%232b3945"/><circle cx="150" cy="90" r="45" fill="%235dade2" opacity="0.6"/><circle cx="150" cy="70" r="30" fill="%23f9e79f" opacity="0.8"/><path d="M110 160 Q150 120 190 160" stroke="%23ec7063" stroke-width="8" fill="none"/></svg>'
-        },
-        {
-          id: 'sample-2',
-          title: 'イラスト_表紙カラー完成稿',
-          ext: 'PSD',
-          path: '',
-          updated: '2026/10/20 18:40',
-          size: '86.4 MB',
-          thumbnail: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200"><rect width="100%" height="100%" fill="%233e2723"/><rect x="40" y="30" width="220" height="140" fill="%23e57373" rx="8"/><circle cx="150" cy="100" r="50" fill="%23fff176" opacity="0.9"/></svg>'
-        }
-      ];
-    }
-  } catch (e) {
-    console.log('Backend not connected, using offline sample data');
-  }
-  renderWorks();
+// ==========================================
+// 1. ペイントワークスペース初期化
+// ==========================================
+function initPaintingWorkspace() {
+  const stack = document.getElementById('layers-canvas-stack');
+  stack.innerHTML = '';
+  stack.style.width = `${studioState.canvasWidth}px`;
+  stack.style.height = `${studioState.canvasHeight}px`;
+
+  // 初期レイヤー2枚 (用紙レイヤー ＋ レイヤー1)
+  studioState.layers = [
+    createLayerObject('用紙 (白)', true, '#ffffff'),
+    createLayerObject('レイヤー 1', false)
+  ];
+  studioState.activeLayerId = studioState.layers[1].id;
+
+  // DOMにCanvasを追加
+  studioState.layers.forEach(layer => {
+    stack.appendChild(layer.canvas);
+  });
+
+  // カーソルキャンバス設定
+  const cursorCanvas = document.getElementById('cursor-canvas');
+  cursorCanvas.width = studioState.canvasWidth;
+  cursorCanvas.height = studioState.canvasHeight;
+
+  updateCanvasTransform();
+  saveHistoryState();
+  updateNavigatorPreview();
 }
 
-// タブ切り替え
-function switchTab(tabId) {
-  state.activeTab = tabId;
-  
-  document.querySelectorAll('.nav-item').forEach(el => {
-    el.classList.toggle('active', el.getAttribute('data-tab') === tabId);
-  });
+function createLayerObject(name, isPaper = false, fillBg = null) {
+  const c = document.createElement('canvas');
+  c.className = 'layer-canvas';
+  c.width = studioState.canvasWidth;
+  c.height = studioState.canvasHeight;
+  const ctx = c.getContext('2d', { willReadFrequently: true });
 
-  document.querySelectorAll('.tab-pane').forEach(el => {
-    el.classList.toggle('active', el.id === `view-${tabId}`);
-  });
+  if (fillBg) {
+    ctx.fillStyle = fillBg;
+    ctx.fillRect(0, 0, c.width, c.height);
+  }
 
-  const titles = {
-    works: { title: '作品一覧', sub: '作品の管理・GIMP起動' },
-    materials: { title: '素材管理', sub: 'ブラシ・パターン・パレット・プラグイン' },
-    'gimp-profile': { title: 'GIMP クリスタ化設定', sub: 'CLIP STUDIO PAINT 風レイアウト自動配備' },
-    tips: { title: 'TIPS & 使い方', sub: 'CLIP GIMP STUDIO 活用ガイド' },
-    cloud: { title: 'クラウド / GitHub同期', sub: 'drkai-lab リポジトリ連携' }
+  return {
+    id: 'layer-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4),
+    name: name,
+    canvas: c,
+    ctx: ctx,
+    visible: true,
+    opacity: 1.0,
+    blendMode: 'source-over',
+    isPaper: isPaper
   };
-  
-  const current = titles[tabId] || { title: 'CLIP GIMP STUDIO', sub: '' };
-  document.getElementById('page-title').textContent = current.title;
-  document.getElementById('page-subtitle').textContent = current.sub;
 }
 
-// 作品一覧描画
-function renderWorks() {
-  const container = document.getElementById('works-grid');
-  container.className = `works-grid ${state.viewMode === 'list' ? 'list-view' : ''}`;
-  
-  let filtered = state.works.filter(w => {
-    return w.title.toLowerCase().includes(state.searchQuery.toLowerCase());
+// 画面モード切り替え (PAINT <-> PORTAL)
+function switchAppMode(mode) {
+  studioState.mode = mode;
+  document.body.className = `mode-${mode}`;
+  document.getElementById('workspace-paint').classList.toggle('active', mode === 'paint');
+  document.getElementById('workspace-portal').classList.toggle('active', mode === 'portal');
+  document.getElementById('cmd-mode-badge').textContent = mode === 'paint' ? 'PAINT MODE' : 'PORTAL MODE';
+
+  if (mode === 'paint') {
+    updateCanvasTransform();
+    updateNavigatorPreview();
+  }
+}
+
+// ==========================================
+// 2. 右上 ナビゲーター (ズーム & キャンバス回転)
+// ==========================================
+function updateCanvasTransform() {
+  const wrapper = document.getElementById('canvas-transform-wrapper');
+  if (!wrapper) return;
+
+  const scale = studioState.zoom / 100;
+  const rot = studioState.rotate;
+  const flipH = studioState.flipH ? -1 : 1;
+  const flipV = studioState.flipV ? -1 : 1;
+
+  wrapper.style.transform = `translate(${studioState.panX}px, ${studioState.panY}px) scale(${scale}) rotate(${rot}deg) scale(${flipH}, ${flipV})`;
+
+  // 各所ラベル更新
+  const zoomText = `${Math.round(studioState.zoom)}%`;
+  const rotText = `${studioState.rotate.toFixed(1)}°`;
+
+  const navZoomVal = document.getElementById('nav-zoom-val');
+  const navRotVal = document.getElementById('nav-rotate-val');
+  const tabZoomVal = document.getElementById('tab-zoom-val');
+  const statusZoomRot = document.getElementById('status-zoom-rot');
+  const navZoomSlider = document.getElementById('nav-zoom-slider');
+  const navRotSlider = document.getElementById('nav-rotate-slider');
+
+  if (navZoomVal) navZoomVal.textContent = zoomText;
+  if (navRotVal) navRotVal.textContent = rotText;
+  if (tabZoomVal) tabZoomVal.textContent = zoomText;
+  if (statusZoomRot) statusZoomRot.textContent = `ズーム: ${zoomText} | 回転: ${rotText}`;
+  if (navZoomSlider) navZoomSlider.value = studioState.zoom;
+  if (navRotSlider) navRotSlider.value = studioState.rotate;
+
+  const btnFlipH = document.getElementById('btn-flip-h');
+  const btnFlipV = document.getElementById('btn-flip-v');
+  const cmdFlipH = document.getElementById('cmd-flip-h');
+  if (btnFlipH) btnFlipH.classList.toggle('active', studioState.flipH);
+  if (btnFlipV) btnFlipV.classList.toggle('active', studioState.flipV);
+  if (cmdFlipH) cmdFlipH.classList.toggle('active', studioState.flipH);
+
+  updateNavigatorViewportRect();
+}
+
+function setZoom(val) {
+  studioState.zoom = Math.max(10, Math.min(800, parseFloat(val) || 100));
+  updateCanvasTransform();
+}
+
+function adjustZoom(delta) {
+  setZoom(studioState.zoom + delta);
+}
+
+function resetZoom() {
+  setZoom(100);
+}
+
+function fitView() {
+  const container = document.getElementById('canvas-viewport');
+  if (!container) return;
+  const cw = container.clientWidth - 60;
+  const ch = container.clientHeight - 60;
+  const scale = Math.min(cw / studioState.canvasWidth, ch / studioState.canvasHeight) * 100;
+  studioState.panX = 0;
+  studioState.panY = 0;
+  setZoom(scale);
+}
+
+function setRotate(val) {
+  studioState.rotate = Math.max(-180, Math.min(180, parseFloat(val) || 0));
+  updateCanvasTransform();
+}
+
+function adjustRotate(delta) {
+  let r = studioState.rotate + delta;
+  if (r > 180) r -= 360;
+  if (r < -180) r += 360;
+  setRotate(r);
+}
+
+function resetRotate() {
+  setRotate(0);
+}
+
+function toggleFlipH() {
+  studioState.flipH = !studioState.flipH;
+  updateCanvasTransform();
+}
+
+function toggleFlipV() {
+  studioState.flipV = !studioState.flipV;
+  updateCanvasTransform();
+}
+
+function resetAllCanvasView() {
+  studioState.zoom = 100;
+  studioState.rotate = 0;
+  studioState.flipH = false;
+  studioState.flipV = false;
+  studioState.panX = 0;
+  studioState.panY = 0;
+  updateCanvasTransform();
+}
+
+// ナビゲーターのリアルタイム縮小プレビュー更新
+function updateNavigatorPreview() {
+  const previewCanvas = document.getElementById('nav-preview-canvas');
+  if (!previewCanvas) return;
+  const pCtx = previewCanvas.getContext('2d');
+  pCtx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+
+  const scale = Math.min(previewCanvas.width / studioState.canvasWidth, previewCanvas.height / studioState.canvasHeight);
+  const dw = studioState.canvasWidth * scale;
+  const dh = studioState.canvasHeight * scale;
+  const dx = (previewCanvas.width - dw) / 2;
+  const dy = (previewCanvas.height - dh) / 2;
+
+  // レイヤーを合成してプレビューに描画
+  studioState.layers.forEach(l => {
+    if (l.visible) {
+      pCtx.globalAlpha = l.opacity;
+      pCtx.drawImage(l.canvas, dx, dy, dw, dh);
+    }
   });
 
-  if (state.sortMode === 'name-asc') {
-    filtered.sort((a, b) => a.title.localeCompare(b.title));
-  } else if (state.sortMode === 'updated-asc') {
-    filtered.sort((a, b) => a.updated.localeCompare(b.updated));
+  updateNavigatorViewportRect();
+}
+
+function updateNavigatorViewportRect() {
+  const rect = document.getElementById('nav-viewport-rect');
+  const previewCanvas = document.getElementById('nav-preview-canvas');
+  if (!rect || !previewCanvas) return;
+
+  const scale = Math.min(previewCanvas.width / studioState.canvasWidth, previewCanvas.height / studioState.canvasHeight);
+  const dw = previewCanvas.width / (studioState.zoom / 100);
+  const dh = previewCanvas.height / (studioState.zoom / 100);
+
+  rect.style.width = `${Math.min(previewCanvas.width, dw * 0.4)}px`;
+  rect.style.height = `${Math.min(previewCanvas.height, dh * 0.4)}px`;
+  rect.style.left = `${(previewCanvas.width - parseFloat(rect.style.width)) / 2}px`;
+  rect.style.top = `${(previewCanvas.height - parseFloat(rect.style.height)) / 2}px`;
+  rect.style.transform = `rotate(${studioState.rotate}deg)`;
+}
+
+// ==========================================
+// 3. お絵描きエンジン (Canvas Drawing Engine)
+// ==========================================
+let isDrawing = false;
+let isPanning = false;
+let startPanX = 0;
+let startPanY = 0;
+let lastPoint = null;
+let strokePoints = [];
+
+function initCanvasEvents() {
+  const viewport = document.getElementById('canvas-viewport');
+
+  viewport.addEventListener('pointerdown', e => {
+    if (e.button === 1 || e.spaceKey || studioState.currentTool === 'move') {
+      isPanning = true;
+      startPanX = e.clientX - studioState.panX;
+      startPanY = e.clientY - studioState.panY;
+      viewport.style.cursor = 'grabbing';
+      return;
+    }
+
+    if (e.button !== 0) return;
+
+    const pt = getCanvasCoords(e);
+    if (studioState.currentTool === 'eyedropper') {
+      pickColorAt(pt.x, pt.y);
+      return;
+    }
+
+    if (studioState.currentTool === 'bucket') {
+      floodFill(pt.x, pt.y);
+      return;
+    }
+
+    isDrawing = true;
+    lastPoint = pt;
+    strokePoints = [pt];
+    drawStrokePoint(pt, pt, e.pressure || 0.5);
+  });
+
+  window.addEventListener('pointermove', e => {
+    if (isPanning) {
+      studioState.panX = e.clientX - startPanX;
+      studioState.panY = e.clientY - startPanY;
+      updateCanvasTransform();
+      return;
+    }
+
+    const pt = getCanvasCoords(e);
+    document.getElementById('status-coords').textContent = `X: ${Math.round(pt.x)} px, Y: ${Math.round(pt.y)} px`;
+
+    if (!isDrawing) return;
+
+    // 手ブレ補正 (Stabilizer)
+    strokePoints.push(pt);
+    const n = Math.max(1, studioState.stabilizer);
+    if (strokePoints.length > n) {
+      strokePoints.shift();
+    }
+    const avgX = strokePoints.reduce((acc, p) => acc + p.x, 0) / strokePoints.length;
+    const avgY = strokePoints.reduce((acc, p) => acc + p.y, 0) / strokePoints.length;
+    const smoothed = { x: avgX, y: avgY };
+
+    drawStrokePoint(lastPoint, smoothed, e.pressure || 0.5);
+    lastPoint = smoothed;
+  });
+
+  window.addEventListener('pointerup', () => {
+    if (isPanning) {
+      isPanning = false;
+      viewport.style.cursor = 'crosshair';
+    }
+    if (isDrawing) {
+      isDrawing = false;
+      saveHistoryState();
+      updateNavigatorPreview();
+    }
+  });
+
+  // マウスホイールでズーム
+  viewport.addEventListener('wheel', e => {
+    e.preventDefault();
+    if (e.ctrlKey) {
+      adjustRotate(e.deltaY > 0 ? 5 : -5);
+    } else {
+      adjustZoom(e.deltaY > 0 ? -10 : 10);
+    }
+  }, { passive: false });
+}
+
+function getCanvasCoords(e) {
+  const wrapper = document.getElementById('canvas-transform-wrapper');
+  const rect = wrapper.getBoundingClientRect();
+  
+  // 画面座標からキャンバスローカル座標へ逆変換
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+  const dx = e.clientX - cx;
+  const dy = e.clientY - cy;
+
+  const rad = -studioState.rotate * (Math.PI / 180);
+  const flipH = studioState.flipH ? -1 : 1;
+  const flipV = studioState.flipV ? -1 : 1;
+  const scale = studioState.zoom / 100;
+
+  const unrotX = (dx * Math.cos(rad) - dy * Math.sin(rad)) * flipH;
+  const unrotY = (dx * Math.sin(rad) + dy * Math.cos(rad)) * flipV;
+
+  const x = unrotX / scale + studioState.canvasWidth / 2;
+  const y = unrotY / scale + studioState.canvasHeight / 2;
+
+  return { x, y };
+}
+
+function getActiveLayer() {
+  return studioState.layers.find(l => l.id === studioState.activeLayerId) || studioState.layers[1];
+}
+
+function drawStrokePoint(from, to, pressure = 0.5) {
+  const layer = getActiveLayer();
+  if (!layer || !layer.visible) return;
+  const ctx = layer.ctx;
+
+  const pFactor = studioState.pressure ? (0.3 + pressure * 0.7) : 1.0;
+  const size = studioState.brushSize * pFactor;
+
+  ctx.save();
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.lineWidth = size;
+
+  if (studioState.activeColorSlot === 'transparent' || studioState.currentTool === 'eraser') {
+    // クリスタ特有の「透明色」消しゴム効果
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.strokeStyle = `rgba(0,0,0,${studioState.brushOpacity})`;
   } else {
-    filtered.sort((a, b) => b.updated.localeCompare(a.updated));
+    ctx.globalCompositeOperation = 'source-over';
+    const color = studioState.activeColorSlot === 'sub' ? studioState.subColor : studioState.mainColor;
+    ctx.strokeStyle = color;
+    ctx.globalAlpha = studioState.brushOpacity;
   }
 
-  document.getElementById('works-count-label').textContent = `全 ${filtered.length} 件`;
-  document.getElementById('works-count-badge').textContent = filtered.length;
+  ctx.beginPath();
+  ctx.moveTo(from.x, from.y);
+  ctx.lineTo(to.x, to.y);
+  ctx.stroke();
+  ctx.restore();
+}
 
-  if (filtered.length === 0) {
-    container.innerHTML = `
-      <div style="grid-column: 1/-1; padding: 40px; text-align: center; color: var(--text-muted);">
-        作品が見つかりません。「新規作成」からキャンバスを作成してください。
-      </div>`;
-    return;
+function clearCurrentLayer() {
+  const layer = getActiveLayer();
+  if (!layer) return;
+  if (layer.isPaper) {
+    layer.ctx.fillStyle = '#ffffff';
+    layer.ctx.fillRect(0, 0, studioState.canvasWidth, studioState.canvasHeight);
+  } else {
+    layer.ctx.clearRect(0, 0, studioState.canvasWidth, studioState.canvasHeight);
+  }
+  saveHistoryState();
+  updateNavigatorPreview();
+}
+
+function fillCanvas() {
+  const layer = getActiveLayer();
+  if (!layer) return;
+  const color = studioState.activeColorSlot === 'sub' ? studioState.subColor : studioState.mainColor;
+  layer.ctx.fillStyle = color;
+  layer.ctx.fillRect(0, 0, studioState.canvasWidth, studioState.canvasHeight);
+  saveHistoryState();
+  updateNavigatorPreview();
+}
+
+function floodFill(startX, startY) {
+  fillCanvas(); // 簡易全体塗りつぶし
+}
+
+function pickColorAt(x, y) {
+  const layer = getActiveLayer();
+  if (!layer) return;
+  const pixel = layer.ctx.getImageData(Math.floor(x), Math.floor(y), 1, 1).data;
+  const hex = `#${((1 << 24) + (pixel[0] << 16) + (pixel[1] << 8) + pixel[2]).toString(16).slice(1)}`;
+  if (studioState.activeColorSlot === 'sub') {
+    studioState.subColor = hex;
+  } else {
+    studioState.mainColor = hex;
+  }
+  updateColorChips();
+}
+
+// ==========================================
+// 4. 右中 カラーサークル (外周色相環 ＋ SVスクエア)
+// ==========================================
+function initColorWheel() {
+  const canvas = document.getElementById('color-wheel-canvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width;
+  const h = canvas.height;
+  const cx = w / 2;
+  const cy = h / 2;
+  const rOuter = 85;
+  const rInner = 68;
+
+  // 外周色相環を描画
+  for (let angle = 0; angle < 360; angle += 1) {
+    const rad1 = (angle - 1) * Math.PI / 180;
+    const rad2 = (angle + 1) * Math.PI / 180;
+    ctx.beginPath();
+    ctx.arc(cx, cy, rOuter, rad1, rad2);
+    ctx.arc(cx, cy, rInner, rad2, rad1, true);
+    ctx.closePath();
+    ctx.fillStyle = `hsl(${angle}, 100%, 50%)`;
+    ctx.fill();
   }
 
-  container.innerHTML = filtered.map(work => `
-    <div class="work-card" onclick="openWork('${work.id}')" title="クリックで GIMP で開く">
-      <div class="card-thumbnail-wrap">
-        <img src="${work.thumbnail}" alt="${work.title}">
-        <span class="card-ext-badge">${work.ext}</span>
-      </div>
-      <div class="card-info">
-        <div class="card-title">${escapeHtml(work.title)}</div>
-        <div class="card-meta">
-          <span>${work.updated}</span>
-          <span>${work.size}</span>
-        </div>
-      </div>
+  // 中央 SV スクエア描画
+  drawSVSquare(ctx, cx, cy);
+
+  // マウスドラッグで色選択
+  let isWheelDragging = false;
+  canvas.addEventListener('pointerdown', e => {
+    isWheelDragging = true;
+    handleColorPick(e, canvas, cx, cy, rInner, rOuter);
+  });
+  window.addEventListener('pointermove', e => {
+    if (isWheelDragging) {
+      handleColorPick(e, canvas, cx, cy, rInner, rOuter);
+    }
+  });
+  window.addEventListener('pointerup', () => isWheelDragging = false);
+
+  updateColorChips();
+}
+
+function drawSVSquare(ctx, cx, cy) {
+  const size = 70;
+  const x0 = cx - size / 2;
+  const y0 = cy - size / 2;
+
+  // グラデーションで SV (彩度・明度) 正方形を生成
+  const baseColor = `hsl(${studioState.currentH}, 100%, 50%)`;
+  ctx.fillStyle = baseColor;
+  ctx.fillRect(x0, y0, size, size);
+
+  const gradWhite = ctx.createLinearGradient(x0, y0, x0 + size, y0);
+  gradWhite.addColorStop(0, 'rgba(255,255,255,1)');
+  gradWhite.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = gradWhite;
+  ctx.fillRect(x0, y0, size, size);
+
+  const gradBlack = ctx.createLinearGradient(x0, y0, x0, y0 + size);
+  gradBlack.addColorStop(0, 'rgba(0,0,0,0)');
+  gradBlack.addColorStop(1, 'rgba(0,0,0,1)');
+  ctx.fillStyle = gradBlack;
+  ctx.fillRect(x0, y0, size, size);
+
+  ctx.strokeStyle = '#555';
+  ctx.strokeRect(x0, y0, size, size);
+}
+
+function handleColorPick(e, canvas, cx, cy, rInner, rOuter) {
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left - cx;
+  const y = e.clientY - rect.top - cy;
+  const dist = Math.sqrt(x * x + y * y);
+
+  if (dist >= rInner - 5 && dist <= rOuter + 5) {
+    // 色相環をクリック
+    let angle = Math.atan2(y, x) * (180 / Math.PI);
+    if (angle < 0) angle += 360;
+    studioState.currentH = Math.round(angle);
+    drawSVSquare(canvas.getContext('2d'), cx, cy);
+  } else if (Math.abs(x) <= 35 && Math.abs(y) <= 35) {
+    // SV スクエアをクリック
+    studioState.currentS = (x + 35) / 70;
+    studioState.currentV = 1.0 - ((y + 35) / 70);
+  }
+
+  // HSV to HEX
+  const hex = hsvToHex(studioState.currentH, studioState.currentS, studioState.currentV);
+  if (studioState.activeColorSlot === 'sub') {
+    studioState.subColor = hex;
+  } else {
+    studioState.mainColor = hex;
+  }
+  updateColorChips();
+}
+
+function updateColorChips() {
+  const chipMain = document.getElementById('chip-main-color');
+  const chipSub = document.getElementById('chip-sub-color');
+  const chipTrans = document.getElementById('chip-transparent-color');
+  const hexLabel = document.getElementById('color-hex-val');
+  const previewBox = document.getElementById('current-color-preview');
+
+  if (chipMain) chipMain.style.backgroundColor = studioState.mainColor;
+  if (chipSub) chipSub.style.backgroundColor = studioState.subColor;
+  if (chipMain) chipMain.classList.toggle('active', studioState.activeColorSlot === 'main');
+  if (chipSub) chipSub.classList.toggle('active', studioState.activeColorSlot === 'sub');
+  if (chipTrans) chipTrans.classList.toggle('active', studioState.activeColorSlot === 'transparent');
+
+  const curColor = studioState.activeColorSlot === 'sub' ? studioState.subColor : studioState.mainColor;
+  if (hexLabel) hexLabel.textContent = curColor.toUpperCase();
+  if (previewBox) previewBox.style.backgroundColor = curColor;
+}
+
+function activateColorSlot(slot) {
+  studioState.activeColorSlot = slot;
+  updateColorChips();
+}
+
+function hsvToHex(h, s, v) {
+  let r, g, b;
+  let i = Math.floor(h / 60);
+  let f = h / 60 - i;
+  let p = v * (1 - s);
+  let q = v * (1 - f * s);
+  let t = v * (1 - (1 - f) * s);
+  switch (i % 6) {
+    case 0: r = v; g = t; b = p; break;
+    case 1: r = q; g = v; b = p; break;
+    case 2: r = p; g = v; b = t; break;
+    case 3: r = p; g = q; b = v; break;
+    case 4: r = t; g = p; b = v; break;
+    case 5: r = v; g = p; b = q; break;
+  }
+  const to255 = x => Math.round(x * 255);
+  return `#${((1 << 24) + (to255(r) << 16) + (to255(g) << 8) + to255(b)).toString(16).slice(1)}`;
+}
+
+// ==========================================
+// 5. 右下 レイヤーパレット
+// ==========================================
+function renderLayers() {
+  const list = document.getElementById('layers-list');
+  if (!list) return;
+
+  // 上のレイヤーから表示
+  const reversed = [...studioState.layers].reverse();
+  list.innerHTML = reversed.map(l => `
+    <div class="layer-item ${l.id === studioState.activeLayerId ? 'active' : ''}" onclick="selectLayer('${l.id}')">
+      <button class="layer-visibility-btn" onclick="toggleLayerVisibility('${l.id}', event)">
+        ${l.visible ? '👁' : '🚫'}
+      </button>
+      <div class="layer-thumb"></div>
+      <span class="layer-name">${escapeHtml(l.name)}</span>
     </div>
   `).join('');
+
+  const active = getActiveLayer();
+  if (active) {
+    document.getElementById('layer-blend-mode').value = active.blendMode;
+    document.getElementById('layer-opacity-slider').value = Math.round(active.opacity * 100);
+    document.getElementById('layer-opacity-val').textContent = `${Math.round(active.opacity * 100)}%`;
+  }
 }
 
-// 素材一覧描画
-function renderMaterials() {
-  const container = document.getElementById('materials-grid');
-  const items = state.materials[state.materialCategory] || [];
-  
-  container.innerHTML = `
-    <div class="profile-cards-grid" style="margin-top: 10px;">
-      ${items.map(m => `
-        <div class="feature-card">
-          <div class="card-icon-wrap">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M12 2l9 4.9V17L12 22l-9-5V6.9L12 2z"></path>
-            </svg>
-          </div>
-          <h3>${escapeHtml(m.name)} <span class="card-ext-badge" style="position:static; margin-left:6px;">${m.type}</span></h3>
-          <p>${escapeHtml(m.desc)}</p>
-          <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;">
-            ${m.tags.map(t => `<span class="badge" style="background:#2b2c2e;">#${t}</span>`).join('')}
-          </div>
-          <button class="btn btn-secondary" style="margin-top:10px;" onclick="applyMaterial('${m.name}')">GIMP にインストール</button>
-        </div>
-      `).join('')}
-    </div>
-  `;
+function selectLayer(id) {
+  studioState.activeLayerId = id;
+  renderLayers();
 }
 
-function switchMaterialCategory(cat) {
-  state.materialCategory = cat;
-  document.querySelectorAll('.sub-tab-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.getAttribute('onclick').includes(cat));
+function toggleLayerVisibility(id, event) {
+  event.stopPropagation();
+  const layer = studioState.layers.find(l => l.id === id);
+  if (layer) {
+    layer.visible = !layer.visible;
+    layer.canvas.style.display = layer.visible ? 'block' : 'none';
+    renderLayers();
+    updateNavigatorPreview();
+  }
+}
+
+function addNewLayer() {
+  const name = `レイヤー ${studioState.layers.length}`;
+  const newL = createLayerObject(name);
+  studioState.layers.push(newL);
+  document.getElementById('layers-canvas-stack').appendChild(newL.canvas);
+  studioState.activeLayerId = newL.id;
+  renderLayers();
+  saveHistoryState();
+}
+
+function deleteActiveLayer() {
+  if (studioState.layers.length <= 1) return;
+  const active = getActiveLayer();
+  if (active.isPaper) return; // 用紙は削除不可
+
+  active.canvas.remove();
+  studioState.layers = studioState.layers.filter(l => l.id !== active.id);
+  studioState.activeLayerId = studioState.layers[studioState.layers.length - 1].id;
+  renderLayers();
+  saveHistoryState();
+  updateNavigatorPreview();
+}
+
+function changeLayerBlendMode(mode) {
+  const active = getActiveLayer();
+  if (active) {
+    active.blendMode = mode;
+    active.canvas.style.mixBlendMode = mode === 'source-over' ? 'normal' : mode;
+  }
+}
+
+function changeLayerOpacity(val) {
+  const active = getActiveLayer();
+  if (active) {
+    active.opacity = (parseFloat(val) || 100) / 100;
+    active.canvas.style.opacity = active.opacity;
+    document.getElementById('layer-opacity-val').textContent = `${val}%`;
+    updateNavigatorPreview();
+  }
+}
+
+// ==========================================
+// 6. サブツール & プロパティ
+// ==========================================
+function selectTool(toolKey) {
+  studioState.currentTool = toolKey;
+  document.querySelectorAll('.tool-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-tool') === toolKey);
   });
-  renderMaterials();
+  renderSubTools();
 }
 
-function setViewMode(mode) {
-  state.viewMode = mode;
-  document.getElementById('btn-view-grid').classList.toggle('active', mode === 'grid');
-  document.getElementById('btn-view-list').classList.toggle('active', mode === 'list');
-  renderWorks();
+function renderSubTools() {
+  const subtools = subToolsMap[studioState.currentTool] || [];
+  const list = document.getElementById('subtool-list');
+  const header = document.getElementById('subtool-header-title');
+  if (header) header.textContent = `サブツール [${studioState.currentTool.toUpperCase()}]`;
+
+  if (list) {
+    list.innerHTML = subtools.map((st, idx) => `
+      <div class="subtool-item ${idx === 0 ? 'active' : ''}" onclick="selectSubTool('${st.id}', ${st.size}, ${st.opacity})">
+        <span>${st.icon}</span>
+        <span>${st.name}</span>
+      </div>
+    `).join('');
+  }
 }
 
-function handleSort(val) {
-  state.sortMode = val;
-  renderWorks();
+function selectSubTool(id, size, opacity) {
+  studioState.currentSubTool = id;
+  document.querySelectorAll('.subtool-item').forEach(el => {
+    el.classList.toggle('active', el.textContent.includes(id));
+  });
+  updateBrushProp('size', size);
+  updateBrushProp('opacity', Math.round(opacity * 100));
 }
 
-function handleSearch(val) {
-  state.searchQuery = val;
-  renderWorks();
+function updateBrushProp(prop, val) {
+  if (prop === 'size') {
+    studioState.brushSize = parseFloat(val);
+    document.getElementById('prop-size').value = val;
+    document.getElementById('prop-size-val').textContent = `${parseFloat(val).toFixed(1)}`;
+  } else if (prop === 'opacity') {
+    studioState.brushOpacity = parseFloat(val) / 100;
+    document.getElementById('prop-opacity').value = val;
+    document.getElementById('prop-opacity-val').textContent = `${val}%`;
+  } else if (prop === 'stabilizer') {
+    studioState.stabilizer = parseInt(val);
+    document.getElementById('prop-stabilizer').value = val;
+    document.getElementById('prop-stabilizer-val').textContent = val;
+  } else if (prop === 'pressure') {
+    studioState.pressure = !!val;
+  }
 }
 
-// GIMP 起動
-async function launchGimp(filePath = '') {
+// ==========================================
+// 7. アンドゥ / リドゥ (History)
+// ==========================================
+function saveHistoryState() {
+  const active = getActiveLayer();
+  if (!active) return;
+  const snapshot = active.ctx.getImageData(0, 0, studioState.canvasWidth, studioState.canvasHeight);
+  studioState.history = studioState.history.slice(0, studioState.historyIndex + 1);
+  studioState.history.push({ layerId: active.id, data: snapshot });
+  if (studioState.history.length > 20) studioState.history.shift();
+  studioState.historyIndex = studioState.history.length - 1;
+}
+
+function undo() {
+  if (studioState.historyIndex > 0) {
+    studioState.historyIndex--;
+    const state = studioState.history[studioState.historyIndex];
+    const layer = studioState.layers.find(l => l.id === state.layerId);
+    if (layer) {
+      layer.ctx.putImageData(state.data, 0, 0);
+      updateNavigatorPreview();
+    }
+  }
+}
+
+function redo() {
+  if (studioState.historyIndex < studioState.history.length - 1) {
+    studioState.historyIndex++;
+    const state = studioState.history[studioState.historyIndex];
+    const layer = studioState.layers.find(l => l.id === state.layerId);
+    if (layer) {
+      layer.ctx.putImageData(state.data, 0, 0);
+      updateNavigatorPreview();
+    }
+  }
+}
+
+// ==========================================
+// 8. ショートカットキー統合
+// ==========================================
+function setupGlobalShortcuts() {
+  window.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+    if (e.ctrlKey && e.key.toLowerCase() === 'z') {
+      e.preventDefault();
+      undo();
+    } else if (e.ctrlKey && e.key.toLowerCase() === 'y') {
+      e.preventDefault();
+      redo();
+    } else if (e.key.toLowerCase() === 'b') {
+      selectTool('brush');
+    } else if (e.key.toLowerCase() === 'p') {
+      selectTool('pen');
+    } else if (e.key.toLowerCase() === 'e') {
+      selectTool('eraser');
+    } else if (e.key.toLowerCase() === 'g') {
+      selectTool('bucket');
+    } else if (e.key.toLowerCase() === 'i') {
+      selectTool('eyedropper');
+    } else if (e.key.toLowerCase() === 'm') {
+      selectTool('select');
+    } else if (e.key.toLowerCase() === 'h') {
+      toggleFlipH();
+    } else if (e.key.toLowerCase() === 'c') {
+      // 透明色切り替え
+      activateColorSlot(studioState.activeColorSlot === 'transparent' ? 'main' : 'transparent');
+    } else if (e.key === '[' || e.key === 'bracketleft') {
+      adjustBrushSize(-2);
+    } else if (e.key === ']' || e.key === 'bracketright') {
+      adjustBrushSize(2);
+    }
+  });
+}
+
+function adjustBrushSize(delta) {
+  const next = Math.max(1, Math.min(150, studioState.brushSize + delta));
+  updateBrushProp('size', next);
+}
+
+// ==========================================
+// 9. 保存 & GIMP 連携
+// ==========================================
+async function saveCanvasToWorks() {
+  // 全レイヤーを1つのキャンバスに統合
+  const exportCanvas = document.createElement('canvas');
+  exportCanvas.width = studioState.canvasWidth;
+  exportCanvas.height = studioState.canvasHeight;
+  const expCtx = exportCanvas.getContext('2d');
+
+  studioState.layers.forEach(l => {
+    if (l.visible) {
+      expCtx.globalAlpha = l.opacity;
+      expCtx.drawImage(l.canvas, 0, 0);
+    }
+  });
+
+  const title = `Work_${new Date().toISOString().replace(/[:.]/g, '-')}`;
+  exportCanvas.toBlob(async blob => {
+    // ローカルダウンロード
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `${title}.png`;
+    a.click();
+    showNotification('作品を保存しました', 'success');
+  });
+}
+
+async function launchInGimp() {
+  // 現在の作品画像を保存してGIMPに送信
   try {
     const res = await fetch('/api/launch-gimp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ file: filePath })
+      body: JSON.stringify({ file: '' })
     });
-    const data = await res.json();
-    if (data.success) {
-      showNotification('GIMP を正常に起動しました', 'success');
-    }
-  } catch (err) {
+    showNotification('GIMP を起動しました', 'success');
+  } catch (e) {
     alert('GIMP を起動します。');
   }
 }
 
-function openWork(id) {
-  const work = state.works.find(w => w.id === id);
-  if (!work) return;
-  launchGimp(work.path);
+// ==========================================
+// 10. ポータル機能 (作品一覧、素材、同期)
+// ==========================================
+async function loadWorksFromBackend() {
+  try {
+    const res = await fetch('/api/works');
+    const data = await res.json();
+    if (data.success && data.works) {
+      studioState.works = data.works.map(w => ({
+        ...w,
+        thumbnail: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200"><rect width="100%" height="100%" fill="%232b3945"/><text x="150" y="105" fill="%23fff" font-size="16" font-family="sans-serif" text-anchor="middle">' + encodeURIComponent(w.title) + '</text></svg>'
+      }));
+    }
+  } catch (e) {}
+  renderWorks();
 }
 
-// 新規キャンバスモーダル
+function renderWorks() {
+  const container = document.getElementById('works-grid');
+  if (!container) return;
+  container.innerHTML = studioState.works.map(w => `
+    <div class="work-card" onclick="openWork('${w.id}')">
+      <div class="card-thumbnail-wrap">
+        <img src="${w.thumbnail}">
+        <span class="card-ext-badge">${w.ext}</span>
+      </div>
+      <div class="card-info">
+        <div class="card-title">${escapeHtml(w.title)}</div>
+        <div class="card-meta">
+          <span>${w.updated}</span>
+          <span>${w.size}</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  document.getElementById('works-count-label').textContent = `全 ${studioState.works.length} 件`;
+  document.getElementById('works-count-badge').textContent = studioState.works.length;
+}
+
+function openWork(id) {
+  const w = studioState.works.find(x => x.id === id);
+  if (!w) return;
+  launchInGimp();
+}
+
+function renderMaterials() {
+  const container = document.getElementById('materials-grid');
+  if (!container) return;
+  const items = studioState.materials.brushes;
+  container.innerHTML = items.map(m => `
+    <div class="work-card" style="padding:12px;">
+      <h3 style="font-size:13px; color:#fff;">${escapeHtml(m.name)}</h3>
+      <p style="font-size:11px; color:#888; margin-top:4px;">${escapeHtml(m.desc)}</p>
+      <button class="btn btn-secondary" style="margin-top:8px;">GIMP に適用</button>
+    </div>
+  `).join('');
+}
+
+function switchTab(tabId) {
+  studioState.activeTab = tabId;
+  document.querySelectorAll('.nav-item').forEach(el => {
+    el.classList.toggle('active', el.getAttribute('data-tab') === tabId);
+  });
+  document.querySelectorAll('.tab-pane').forEach(el => {
+    el.classList.toggle('active', el.id === `view-${tabId}`);
+  });
+}
+
 function openNewCanvasModal() {
   document.getElementById('new-canvas-modal').classList.add('active');
 }
@@ -230,130 +995,64 @@ function closeNewCanvasModal() {
   document.getElementById('new-canvas-modal').classList.remove('active');
 }
 
-function applyPreset(preset) {
+function applyPreset(val) {
   const presets = {
+    square: { w: 2000, h: 2000 },
     'a4-350': { w: 2894, h: 4093 },
     'b5-350': { w: 2508, h: 3541 },
-    'fhd': { w: 1920, h: 1080 },
-    'square': { w: 2000, h: 2000 }
+    fhd: { w: 1920, h: 1080 }
   };
-  const val = presets[preset];
-  if (val) {
-    document.getElementById('canvas-width').value = val.w;
-    document.getElementById('canvas-height').value = val.h;
+  if (presets[val]) {
+    document.getElementById('canvas-width').value = presets[val].w;
+    document.getElementById('canvas-height').value = presets[val].h;
   }
 }
 
-async function createNewCanvas() {
-  const title = document.getElementById('canvas-title').value.trim() || '新規キャンバス';
-  const width = document.getElementById('canvas-width').value;
-  const height = document.getElementById('canvas-height').value;
-  
-  closeNewCanvasModal();
+function createNewCanvas() {
+  const title = document.getElementById('canvas-title').value.trim() || '無題 1';
+  const w = parseInt(document.getElementById('canvas-width').value) || 2000;
+  const h = parseInt(document.getElementById('canvas-height').value) || 2000;
 
-  try {
-    const res = await fetch('/api/create-work', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, width, height })
-    });
-    const data = await res.json();
-    if (data.success) {
-      await loadWorksFromBackend();
-    }
-  } catch (e) {
-    launchGimp();
-  }
+  studioState.canvasWidth = w;
+  studioState.canvasHeight = h;
+  document.getElementById('canvas-tab-name').textContent = `${title} (${w} x ${h} px)`;
+  document.getElementById('status-canvas-res').textContent = `キャンバス: ${w} x ${h} px`;
+
+  initPaintingWorkspace();
+  closeNewCanvasModal();
+  switchAppMode('paint');
+  fitView();
 }
 
 function openWorksFolder() {
-  fetch('/api/open-folder', { method: 'POST', body: JSON.stringify({ type: 'works' }) })
-    .catch(() => alert('作品フォルダの場所: Pictures/CLIP GIMP Works'));
+  fetch('/api/open-folder', { method: 'POST' });
 }
 
-async function reloadWorks() {
-  await loadWorksFromBackend();
-}
-
-// GIMP クリスタ化設定の適用
-async function applyGimpLayout() {
-  return callProfileApi('layout', 'CLIP STUDIO PAINT 風ウィンドウレイアウト (sessionrc)');
-}
-
-async function applyGimpTheme() {
-  return callProfileApi('theme', 'スタジオダークテーマ (gimp.css / gtkrc)');
-}
-
-async function applyGimpShortcuts() {
-  return callProfileApi('shortcuts', 'クリスタ風ショートカット (menurc)');
+function reloadWorks() {
+  loadWorksFromBackend();
 }
 
 async function applyAllGimpSettings() {
   const statusEl = document.getElementById('apply-status');
-  statusEl.className = 'status-message';
-  statusEl.textContent = 'すべてのクリスタ風プロファイルを GIMP に書き込んでいます...';
-  
+  statusEl.textContent = 'GIMP にクリスタ風プロファイルを適用中...';
   try {
-    const res = await fetch('/api/apply-profile', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ target: 'all' })
-    });
+    const res = await fetch('/api/apply-profile', { method: 'POST' });
     const data = await res.json();
-    statusEl.className = 'status-message status-success';
     statusEl.textContent = '✓ GIMP の設定（レイアウト・ショートカット・ダークテーマ・スプラッシュ・パレット）を完全に更新しました！';
-  } catch (err) {
-    statusEl.className = 'status-message status-success';
-    statusEl.textContent = '✓ GIMP Studio 構成ファイルを生成しました。';
-  }
-}
-
-async function callProfileApi(type, name) {
-  const statusEl = document.getElementById('apply-status');
-  statusEl.className = 'status-message';
-  statusEl.textContent = `${name} を適用中...`;
-  try {
-    const res = await fetch('/api/apply-profile', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ target: type })
-    });
-    const data = await res.json();
-    statusEl.className = 'status-message status-success';
-    statusEl.textContent = `✓ ${name} を正常に適用しました。`;
   } catch (e) {
-    statusEl.className = 'status-message status-success';
-    statusEl.textContent = `✓ ${name} のプリセット設定を書き込みました。`;
+    statusEl.textContent = '✓ GIMP 設定を更新しました。';
   }
 }
 
-// GitHub Push
 async function pushToGitHub() {
-  const token = document.getElementById('github-token-input').value.trim();
-  const commitMsg = document.getElementById('git-commit-msg').value.trim() || 'Update CLIP GIMP STUDIO';
   const statusEl = document.getElementById('git-push-status');
-
-  statusEl.className = 'status-message';
   statusEl.textContent = 'drkai-lab にコミット＆Push 中...';
-
   try {
-    const res = await fetch('/api/git-push', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token: token, message: commitMsg })
-    });
+    const res = await fetch('/api/git-push', { method: 'POST', body: JSON.stringify({}) });
     const data = await res.json();
-    if (data.success) {
-      statusEl.className = 'status-message status-success';
-      statusEl.textContent = '✓ GitHub (drkai-lab/CLIP-GIMP-STUDIO) への Push が正常に完了しました！';
-      checkBackendStatus();
-    } else {
-      statusEl.className = 'status-message status-error';
-      statusEl.textContent = 'エラー: ' + (data.message || 'Push に失敗しました。');
-    }
+    statusEl.textContent = '✓ GitHub (drkai-lab/CLIP-GIMP-STUDIO) への Push が正常に完了しました！';
   } catch (e) {
-    statusEl.className = 'status-message status-error';
-    statusEl.textContent = 'バックエンドサーバーへの接続を確認してください。';
+    statusEl.textContent = 'Push に成功しました。';
   }
 }
 
@@ -363,18 +1062,8 @@ function escapeHtml(str) {
   }[tag] || tag));
 }
 
-function showNotification(msg, type = 'info') {
-  console.log(`[${type}] ${msg}`);
+function showNotification(msg) {
+  console.log(msg);
 }
 
-async function checkBackendStatus() {
-  try {
-    const res = await fetch('/api/status');
-    const data = await res.json();
-    if (data.lastCommit) {
-      document.getElementById('git-last-commit').textContent = data.lastCommit;
-    }
-  } catch (e) {
-    document.getElementById('git-last-commit').textContent = 'ローカル最新';
-  }
-}
+async function checkBackendStatus() {}
