@@ -58,7 +58,7 @@ while ($listener.IsListening) {
         continue
     }
 
-    # API: 作品一覧の取得 (リアルタイムスキャン)
+    # Route: Get works list
     if ($urlPath -eq "/api/works" -and $request.HttpMethod -eq "GET") {
         $files = Get-ChildItem -Path $worksDir -File | Where-Object { $_.Extension -match '\.(xcf|png|jpg|jpeg|psd|clip)$' } | Sort-Object LastWriteTime -Descending
         $items = @()
@@ -78,7 +78,7 @@ while ($listener.IsListening) {
         continue
     }
 
-    # API: 新規キャンバスの作成
+    # Route: Create new work
     if ($urlPath -eq "/api/create-work" -and $request.HttpMethod -eq "POST") {
         $reader = New-Object System.IO.StreamReader($request.InputStream, [System.Text.Encoding]::UTF8)
         $body = $reader.ReadToEnd() | ConvertFrom-Json -ErrorAction SilentlyContinue
@@ -87,11 +87,9 @@ while ($listener.IsListening) {
         $w = if ($body.width) { [int]$body.width } else { 2000 }
         $h = if ($body.height) { [int]$body.height } else { 2000 }
 
-        # 安全なファイル名
         $safeTitle = [regex]::Replace($title, '[\\/:*?"<>|]', '_')
         $filePath = Join-Path $worksDir "$safeTitle.png"
 
-        # 白背景のベース画像を生成
         Add-Type -AssemblyName System.Drawing
         $bmp = New-Object System.Drawing.Bitmap $w, $h
         $g = [System.Drawing.Graphics]::FromImage($bmp)
@@ -100,7 +98,6 @@ while ($listener.IsListening) {
         $g.Dispose()
         $bmp.Dispose()
 
-        # GIMP で開く
         if (Test-Path $gimpPath) {
             Start-Process $gimpPath -ArgumentList "`"$filePath`""
         }
@@ -109,7 +106,7 @@ while ($listener.IsListening) {
         continue
     }
 
-    # API: GIMP 起動
+    # Route: Launch GIMP
     if ($urlPath -eq "/api/launch-gimp" -and $request.HttpMethod -eq "POST") {
         $reader = New-Object System.IO.StreamReader($request.InputStream, [System.Text.Encoding]::UTF8)
         $body = $reader.ReadToEnd() | ConvertFrom-Json -ErrorAction SilentlyContinue
@@ -127,21 +124,21 @@ while ($listener.IsListening) {
         continue
     }
 
-    # API: GIMP プロファイルの適用
+    # Route: Apply GIMP profile
     if ($urlPath -eq "/api/apply-profile" -and $request.HttpMethod -eq "POST") {
         powershell.exe -ExecutionPolicy Bypass -NoProfile -File (Join-Path $rootDir "apply-profile.ps1") | Out-Null
         Send-JsonResponse $context 200 @{ success = $true; message = "CLIP STUDIO layout profile applied" }
         continue
     }
 
-    # API: 作品フォルダを開く
+    # Route: Open works folder
     if ($urlPath -eq "/api/open-folder" -and $request.HttpMethod -eq "POST") {
         Start-Process "explorer.exe" $worksDir
         Send-JsonResponse $context 200 @{ success = $true }
         continue
     }
 
-    # API: ステータス取得
+    # Route: Get status
     if ($urlPath -eq "/api/status" -and $request.HttpMethod -eq "GET") {
         Set-Location $rootDir
         $lastCommit = git log -1 --pretty=format:"%h - %s (%cr)" 2>$null
@@ -155,7 +152,7 @@ while ($listener.IsListening) {
         continue
     }
 
-    # API: GitHub Push
+    # Route: GitHub push
     if ($urlPath -eq "/api/git-push" -and $request.HttpMethod -eq "POST") {
         $reader = New-Object System.IO.StreamReader($request.InputStream, [System.Text.Encoding]::UTF8)
         $body = $reader.ReadToEnd() | ConvertFrom-Json -ErrorAction SilentlyContinue
@@ -188,7 +185,7 @@ while ($listener.IsListening) {
         continue
     }
 
-    # 静的ファイルの配信
+    # Static file delivery
     $localPath = if ($urlPath -eq "/" -or $urlPath -eq "") { "index.html" } else { $urlPath.TrimStart("/") }
     $fullPath = Join-Path $rootDir $localPath
 
