@@ -1,0 +1,12 @@
+GIMP Palette
+Name: CLIP STUDIO - Anime Skin Tones
+Columns: 4
+# Skin tone palette for character drawing
+255 240 230 Skin_Base_Light
+250 220 200 Skin_Shadow_1
+235 190 170 Skin_Shadow_2
+220 160 145 Skin_Shadow_Deep
+255 210 205 Cheek_Blush
+255 180 175 Lip_Color
+255 255 255 Highlight
+200 130 120 Accent_Red

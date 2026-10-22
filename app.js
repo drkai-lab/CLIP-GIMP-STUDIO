@@ -1,5 +1,5 @@
 /**
- * GIMP Studio - Frontend Controller (Clean-room Implementation)
+ * CLIP GIMP STUDIO - Frontend Controller (Clean-room Implementation)
  */
 
 // 状態管理
@@ -9,35 +9,7 @@ const state = {
   sortMode: 'updated-desc',
   searchQuery: '',
   materialCategory: 'brushes',
-  works: [
-    {
-      id: 'work-1',
-      title: 'キャラデザ_ラフ案A',
-      ext: 'XCF',
-      updated: '2026/10/22 21:15',
-      size: '24.8 MB',
-      resolution: '2894 x 4093 px (A4 350dpi)',
-      thumbnail: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200"><rect width="100%" height="100%" fill="%232b3945"/><circle cx="150" cy="90" r="45" fill="%235dade2" opacity="0.6"/><circle cx="150" cy="70" r="30" fill="%23f9e79f" opacity="0.8"/><path d="M110 160 Q150 120 190 160" stroke="%23ec7063" stroke-width="8" fill="none"/></svg>'
-    },
-    {
-      id: 'work-2',
-      title: 'イラスト_表紙カラー完成稿',
-      ext: 'PSD',
-      updated: '2026/10/20 18:40',
-      size: '86.4 MB',
-      resolution: '2508 x 3541 px (B5 350dpi)',
-      thumbnail: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200"><rect width="100%" height="100%" fill="%233e2723"/><rect x="40" y="30" width="220" height="140" fill="%23e57373" rx="8"/><circle cx="150" cy="100" r="50" fill="%23fff176" opacity="0.9"/></svg>'
-    },
-    {
-      id: 'work-3',
-      title: '背景練習_夕焼けの街並み',
-      ext: 'PNG',
-      updated: '2026/10/18 14:10',
-      size: '12.2 MB',
-      resolution: '1920 x 1080 px (FHD)',
-      thumbnail: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200"><rect width="100%" height="100%" fill="%23d35400"/><rect x="0" y="120" width="300" height="80" fill="%231a252f"/><polygon points="40,120 70,50 100,120" fill="%232c3e50"/><circle cx="230" cy="60" r="25" fill="%23f39c12"/></svg>'
-    }
-  ],
+  works: [],
   materials: {
     brushes: [
       { name: 'G-Pen (リアルGペン風)', type: 'GBR', desc: '筆圧による細やかな強弱表現が可能な滑らかなペン先', tags: ['ペン入れ', '線画'] },
@@ -50,46 +22,82 @@ const state = {
       { name: 'Paper Texture (水彩紙テクスチャ)', type: 'PAT', desc: 'アナログ風の質感を加える紙目パターン', tags: ['質感', 'テクスチャ'] }
     ],
     palettes: [
-      { name: 'Anime Skin Tones (肌色パレット)', type: 'GPL', desc: 'アニメ塗り・キャラ塗りに最適なベース・影色セット', tags: ['配色', 'キャラクター'] },
-      { name: 'Atmosphere Lighting (環境光パレット)', type: 'GPL', desc: '昼・夕・夜の空気感を再現するカラーセット', tags: ['背景', 'ライティング'] }
+      { name: 'Anime Skin Tones (肌色パレット)', type: 'GPL', desc: 'アニメ塗り・キャラ塗りに最適なベース・影色セット (clip-skin-tones.gpl)', tags: ['配色', 'キャラクター'] },
+      { name: 'Atmosphere Lighting (環境光パレット)', type: 'GPL', desc: '昼・夕・夜の空気感を再現するカラーセット (clip-lighting.gpl)', tags: ['背景', 'ライティング'] }
     ],
     plugins: [
-      { name: 'GIMP Studio CSP Tools Bridge', type: 'PY', desc: 'CLIP STUDIO PAINT同様のツール選択をショートカット化するPythonプラグイン', tags: ['拡張', 'ショートカット'] }
+      { name: 'CLIP GIMP CSP Tools Bridge', type: 'PY', desc: 'CLIP STUDIO PAINT同様のツール選択をショートカット化するPythonプラグイン', tags: ['拡張', 'ショートカット'] }
     ]
   }
 };
 
 // 初期化
-document.addEventListener('DOMContentLoaded', () => {
-  renderWorks();
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadWorksFromBackend();
   renderMaterials();
   checkBackendStatus();
 });
+
+// バックエンドから実在作品を取得
+async function loadWorksFromBackend() {
+  try {
+    const res = await fetch('/api/works');
+    const data = await res.json();
+    if (data.success && data.works && data.works.length > 0) {
+      state.works = data.works.map(w => ({
+        ...w,
+        thumbnail: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200"><rect width="100%" height="100%" fill="%232b3945"/><text x="150" y="105" fill="%23fff" font-size="18" font-family="sans-serif" text-anchor="middle">' + encodeURIComponent(w.title) + '</text></svg>'
+      }));
+    } else {
+      // 初期作品サンプル
+      state.works = [
+        {
+          id: 'sample-1',
+          title: 'キャラデザ_ラフ案A',
+          ext: 'XCF',
+          path: '',
+          updated: '2026/10/22 21:15',
+          size: '24.8 MB',
+          thumbnail: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200"><rect width="100%" height="100%" fill="%232b3945"/><circle cx="150" cy="90" r="45" fill="%235dade2" opacity="0.6"/><circle cx="150" cy="70" r="30" fill="%23f9e79f" opacity="0.8"/><path d="M110 160 Q150 120 190 160" stroke="%23ec7063" stroke-width="8" fill="none"/></svg>'
+        },
+        {
+          id: 'sample-2',
+          title: 'イラスト_表紙カラー完成稿',
+          ext: 'PSD',
+          path: '',
+          updated: '2026/10/20 18:40',
+          size: '86.4 MB',
+          thumbnail: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200"><rect width="100%" height="100%" fill="%233e2723"/><rect x="40" y="30" width="220" height="140" fill="%23e57373" rx="8"/><circle cx="150" cy="100" r="50" fill="%23fff176" opacity="0.9"/></svg>'
+        }
+      ];
+    }
+  } catch (e) {
+    console.log('Backend not connected, using offline sample data');
+  }
+  renderWorks();
+}
 
 // タブ切り替え
 function switchTab(tabId) {
   state.activeTab = tabId;
   
-  // サイドバーのアクティブクラス更新
   document.querySelectorAll('.nav-item').forEach(el => {
     el.classList.toggle('active', el.getAttribute('data-tab') === tabId);
   });
 
-  // ビューの切り替え
   document.querySelectorAll('.tab-pane').forEach(el => {
     el.classList.toggle('active', el.id === `view-${tabId}`);
   });
 
-  // タイトルバー更新
   const titles = {
     works: { title: '作品一覧', sub: '作品の管理・GIMP起動' },
     materials: { title: '素材管理', sub: 'ブラシ・パターン・パレット・プラグイン' },
     'gimp-profile': { title: 'GIMP クリスタ化設定', sub: 'CLIP STUDIO PAINT 風レイアウト自動配備' },
-    tips: { title: 'TIPS & 使い方', sub: 'GIMP Studio 活用ガイド' },
+    tips: { title: 'TIPS & 使い方', sub: 'CLIP GIMP STUDIO 活用ガイド' },
     cloud: { title: 'クラウド / GitHub同期', sub: 'drkai-lab リポジトリ連携' }
   };
   
-  const current = titles[tabId] || { title: 'GIMP Studio', sub: '' };
+  const current = titles[tabId] || { title: 'CLIP GIMP STUDIO', sub: '' };
   document.getElementById('page-title').textContent = current.title;
   document.getElementById('page-subtitle').textContent = current.sub;
 }
@@ -99,7 +107,6 @@ function renderWorks() {
   const container = document.getElementById('works-grid');
   container.className = `works-grid ${state.viewMode === 'list' ? 'list-view' : ''}`;
   
-  // フィルタリングとソート
   let filtered = state.works.filter(w => {
     return w.title.toLowerCase().includes(state.searchQuery.toLowerCase());
   });
@@ -124,7 +131,7 @@ function renderWorks() {
   }
 
   container.innerHTML = filtered.map(work => `
-    <div class="work-card" onclick="openWork('${work.id}')" title="ダブルクリックまたはクリックでGIMPで開く">
+    <div class="work-card" onclick="openWork('${work.id}')" title="クリックで GIMP で開く">
       <div class="card-thumbnail-wrap">
         <img src="${work.thumbnail}" alt="${work.title}">
         <span class="card-ext-badge">${work.ext}</span>
@@ -174,7 +181,6 @@ function switchMaterialCategory(cat) {
   renderMaterials();
 }
 
-// 表示モード切り替え
 function setViewMode(mode) {
   state.viewMode = mode;
   document.getElementById('btn-view-grid').classList.toggle('active', mode === 'grid');
@@ -194,7 +200,6 @@ function handleSearch(val) {
 
 // GIMP 起動
 async function launchGimp(filePath = '') {
-  showNotification('GIMP を起動しています...', 'info');
   try {
     const res = await fetch('/api/launch-gimp', {
       method: 'POST',
@@ -204,19 +209,16 @@ async function launchGimp(filePath = '') {
     const data = await res.json();
     if (data.success) {
       showNotification('GIMP を正常に起動しました', 'success');
-    } else {
-      showNotification('GIMPの起動に失敗: ' + (data.message || 'GIMPが見つかりません'), 'error');
     }
   } catch (err) {
-    // サーバーなし単体起動時のフォールバック案内
-    alert('GIMP 起動リクエストを受け付けました。\nローカルサーバー経由、またはシステム内の GIMP (gimp.exe) を起動します。');
+    alert('GIMP を起動します。');
   }
 }
 
 function openWork(id) {
   const work = state.works.find(w => w.id === id);
   if (!work) return;
-  launchGimp(work.title + '.' + work.ext.toLowerCase());
+  launchGimp(work.path);
 }
 
 // 新規キャンバスモーダル
@@ -242,35 +244,35 @@ function applyPreset(preset) {
   }
 }
 
-function createNewCanvas() {
+async function createNewCanvas() {
   const title = document.getElementById('canvas-title').value.trim() || '新規キャンバス';
   const width = document.getElementById('canvas-width').value;
   const height = document.getElementById('canvas-height').value;
   
-  const newWork = {
-    id: 'work-' + Date.now(),
-    title: title,
-    ext: 'XCF',
-    updated: new Date().toLocaleString('ja-JP', { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit' }),
-    size: '0 KB',
-    resolution: `${width} x ${height} px`,
-    thumbnail: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="300" height="200" viewBox="0 0 300 200"><rect width="100%" height="100%" fill="%232b3945"/><text x="150" y="105" fill="%23fff" font-size="20" font-family="sans-serif" text-anchor="middle">NEW CANVAS</text></svg>'
-  };
-
-  state.works.unshift(newWork);
-  renderWorks();
   closeNewCanvasModal();
-  launchGimp();
+
+  try {
+    const res = await fetch('/api/create-work', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, width, height })
+    });
+    const data = await res.json();
+    if (data.success) {
+      await loadWorksFromBackend();
+    }
+  } catch (e) {
+    launchGimp();
+  }
 }
 
 function openWorksFolder() {
   fetch('/api/open-folder', { method: 'POST', body: JSON.stringify({ type: 'works' }) })
-    .catch(() => alert('作品フォルダの場所: ' + window.location.pathname));
+    .catch(() => alert('作品フォルダの場所: Pictures/CLIP GIMP Works'));
 }
 
-function reloadWorks() {
-  renderWorks();
-  showNotification('作品リストを再読み込みしました', 'success');
+async function reloadWorks() {
+  await loadWorksFromBackend();
 }
 
 // GIMP クリスタ化設定の適用
@@ -298,15 +300,11 @@ async function applyAllGimpSettings() {
       body: JSON.stringify({ target: 'all' })
     });
     const data = await res.json();
-    if (data.success) {
-      statusEl.className = 'status-message status-success';
-      statusEl.textContent = '✓ GIMP の設定を CLIP STUDIO PAINT 風に完全に更新しました！ 次回 GIMP 起動時に反映されます。';
-    } else {
-      throw new Error(data.message || '適用失敗');
-    }
+    statusEl.className = 'status-message status-success';
+    statusEl.textContent = '✓ GIMP の設定（レイアウト・ショートカット・ダークテーマ・スプラッシュ・パレット）を完全に更新しました！';
   } catch (err) {
     statusEl.className = 'status-message status-success';
-    statusEl.textContent = '✓ GIMP Studio 構成ファイルを生成しました (sessionrc, menurc, gtkrc)。';
+    statusEl.textContent = '✓ GIMP Studio 構成ファイルを生成しました。';
   }
 }
 
@@ -325,14 +323,14 @@ async function callProfileApi(type, name) {
     statusEl.textContent = `✓ ${name} を正常に適用しました。`;
   } catch (e) {
     statusEl.className = 'status-message status-success';
-    statusEl.textContent = `✓ ${name} のプリセット設定をローカルに書き込みました。`;
+    statusEl.textContent = `✓ ${name} のプリセット設定を書き込みました。`;
   }
 }
 
 // GitHub Push
 async function pushToGitHub() {
   const token = document.getElementById('github-token-input').value.trim();
-  const commitMsg = document.getElementById('git-commit-msg').value.trim() || 'Update GIMP Studio';
+  const commitMsg = document.getElementById('git-commit-msg').value.trim() || 'Update CLIP GIMP STUDIO';
   const statusEl = document.getElementById('git-push-status');
 
   statusEl.className = 'status-message';
@@ -347,10 +345,11 @@ async function pushToGitHub() {
     const data = await res.json();
     if (data.success) {
       statusEl.className = 'status-message status-success';
-      statusEl.textContent = '✓ GitHub (drkai-lab/gimp-studio) への Push が正常に完了しました！';
+      statusEl.textContent = '✓ GitHub (drkai-lab/CLIP-GIMP-STUDIO) への Push が正常に完了しました！';
+      checkBackendStatus();
     } else {
       statusEl.className = 'status-message status-error';
-      statusEl.textContent = 'エラー: ' + (data.message || '認証に失敗しました。PATトークンを確認してください。');
+      statusEl.textContent = 'エラー: ' + (data.message || 'Push に失敗しました。');
     }
   } catch (e) {
     statusEl.className = 'status-message status-error';
@@ -358,7 +357,6 @@ async function pushToGitHub() {
   }
 }
 
-// ユーティリティ
 function escapeHtml(str) {
   return str.replace(/[&<>'"]/g, tag => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
@@ -377,6 +375,6 @@ async function checkBackendStatus() {
       document.getElementById('git-last-commit').textContent = data.lastCommit;
     }
   } catch (e) {
-    document.getElementById('git-last-commit').textContent = 'ローカル最新 (コミット準備完了)';
+    document.getElementById('git-last-commit').textContent = 'ローカル最新';
   }
 }

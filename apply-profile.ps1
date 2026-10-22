@@ -34,5 +34,22 @@ if (Test-Path $cssSrc) {
     Write-Host "[OK] gimp.css applied (Studio Dark Scheme)" -ForegroundColor Green
 }
 
-Write-Host "`nSuccessfully applied CLIP STUDIO PAINT layout to GIMP!" -ForegroundColor Cyan
+# 4. splashes (Splash screen)
+$splashDir = Join-Path $gimpTargetDir "splashes"
+if (-not (Test-Path $splashDir)) { New-Item -ItemType Directory -Path $splashDir -Force | Out-Null }
+$splashSrc = Join-Path $scriptDir "gimp_profile\splash.png"
+if (Test-Path $splashSrc) {
+    Copy-Item $splashSrc -Destination (Join-Path $splashDir "splash.png") -Force
+    Write-Host "[OK] splash.png applied (CLIP GIMP STUDIO Splash Screen)" -ForegroundColor Green
+}
+
+# 5. palettes (CLIP STUDIO Color Palettes)
+$palettesDir = Join-Path $gimpTargetDir "palettes"
+if (-not (Test-Path $palettesDir)) { New-Item -ItemType Directory -Path $palettesDir -Force | Out-Null }
+Get-ChildItem -Path (Join-Path $scriptDir "gimp_profile") -Filter "*.gpl" | ForEach-Object {
+    Copy-Item $_.FullName -Destination $palettesDir -Force
+    Write-Host "[OK] Palette applied: $($_.Name)" -ForegroundColor Green
+}
+
+Write-Host "`nSuccessfully applied CLIP STUDIO PAINT layout, palettes, and splash to GIMP!" -ForegroundColor Cyan
 Write-Host "Launch GIMP to see the new layout." -ForegroundColor White

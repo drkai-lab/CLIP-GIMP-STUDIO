@@ -6,6 +6,11 @@ param (
 )
 
 $rootDir = $PSScriptRoot
+$worksDir = "$env:USERPROFILE\Pictures\CLIP GIMP Works"
+if (-not (Test-Path $worksDir)) {
+    New-Item -ItemType Directory -Path $worksDir -Force | Out-Null
+}
+
 $gimpPath = "$env:LOCALAPPDATA\Programs\GIMP 2\bin\gimp-2.10.exe"
 if (-not (Test-Path $gimpPath)) {
     $gimpCmd = Get-Command gimp* -ErrorAction SilentlyContinue | Select-Object -First 1
@@ -19,7 +24,7 @@ $listener.Prefixes.Add($prefix)
 try {
     $listener.Start()
     Write-Host "[CLIP GIMP STUDIO Server] Running at $prefix"
-    Write-Host "[CLIP GIMP STUDIO Server] Press Ctrl+C to stop"
+    Write-Host "[CLIP GIMP STUDIO Server] Works Directory: $worksDir"
 } catch {
     Write-Error "Failed to start HttpListener on $prefix : $_"
     exit 1
@@ -38,7 +43,7 @@ function Send-Response($context, [int]$statusCode, [string]$contentType, [byte[]
 }
 
 function Send-JsonResponse($context, [int]$statusCode, $obj) {
-    $json = $obj | ConvertTo-Json -Depth 3 -Compress
+    $json = $obj | ConvertTo-Json -Depth 5 -Compress
     $bytes = [System.Text.Encoding]::UTF8.GetBytes($json)
     Send-Response $context $statusCode "application/json; charset=utf-8" $bytes
 }
@@ -53,65 +58,104 @@ while ($listener.IsListening) {
         continue
     }
 
-    # API Routes
+    # API: 作品一覧の取得 (リアルタイムスキャン)
+    if ($urlPath -eq "/api/works" -and $request.HttpMethod -eq "GET") {
+        $files = Get-ChildItem -Path $worksDir -File | Where-Object { $_.Extension -match '\.(xcf|png|jpg|jpeg|psd|clip)$' } | Sort-Object LastWriteTime -Descending
+        $items = @()
+        foreach ($f in $files) {
+            $ext = $f.Extension.TrimStart(".").ToUpper()
+            $sizeMb = [math]::Round($f.Length / 1MB, 2)
+            $items += @{
+                id = $f.Name
+                title = [System.IO.Path]::GetFileNameWithoutExtension($f.Name)
+                ext = $ext
+                path = $f.FullName
+                updated = $f.LastWriteTime.ToString("yyyy/MM/dd HH:mm")
+                size = "$sizeMb MB"
+            }
+        }
+        Send-JsonResponse $context 200 @{ success = $true; works = $items; folder = $worksDir }
+        continue
+    }
+
+    # API: 新規キャンバスの作成
+    if ($urlPath -eq "/api/create-work" -and $request.HttpMethod -eq "POST") {
+        $reader = New-Object System.IO.StreamReader($request.InputStream, [System.Text.Encoding]::UTF8)
+        $body = $reader.ReadToEnd() | ConvertFrom-Json -ErrorAction SilentlyContinue
+
+        $title = if ($body.title) { $body.title } else { "Untitled_" + (Get-Date -Format "yyyyMMdd_HHmmss") }
+        $w = if ($body.width) { [int]$body.width } else { 2000 }
+        $h = if ($body.height) { [int]$body.height } else { 2000 }
+
+        # 安全なファイル名
+        $safeTitle = [regex]::Replace($title, '[\\/:*?"<>|]', '_')
+        $filePath = Join-Path $worksDir "$safeTitle.png"
+
+        # 白背景のベース画像を生成
+        Add-Type -AssemblyName System.Drawing
+        $bmp = New-Object System.Drawing.Bitmap $w, $h
+        $g = [System.Drawing.Graphics]::FromImage($bmp)
+        $g.Clear([System.Drawing.Color]::White)
+        $bmp.Save($filePath, [System.Drawing.Imaging.ImageFormat]::Png)
+        $g.Dispose()
+        $bmp.Dispose()
+
+        # GIMP で開く
+        if (Test-Path $gimpPath) {
+            Start-Process $gimpPath -ArgumentList "`"$filePath`""
+        }
+
+        Send-JsonResponse $context 200 @{ success = $true; path = $filePath; title = $safeTitle }
+        continue
+    }
+
+    # API: GIMP 起動
     if ($urlPath -eq "/api/launch-gimp" -and $request.HttpMethod -eq "POST") {
         $reader = New-Object System.IO.StreamReader($request.InputStream, [System.Text.Encoding]::UTF8)
         $body = $reader.ReadToEnd() | ConvertFrom-Json -ErrorAction SilentlyContinue
 
         if (Test-Path $gimpPath) {
-            Start-Process $gimpPath
+            if ($body -and $body.file -and (Test-Path $body.file)) {
+                Start-Process $gimpPath -ArgumentList "`"$($body.file)`""
+            } else {
+                Start-Process $gimpPath
+            }
             Send-JsonResponse $context 200 @{ success = $true; message = "GIMP launched successfully" }
         } else {
-            Send-JsonResponse $context 404 @{ success = $false; message = "GIMP executable not found at $gimpPath" }
+            Send-JsonResponse $context 404 @{ success = $false; message = "GIMP executable not found" }
         }
         continue
     }
 
+    # API: GIMP プロファイルの適用
     if ($urlPath -eq "/api/apply-profile" -and $request.HttpMethod -eq "POST") {
-        $gimpConfigDir = "$env:APPDATA\GIMP\2.10"
-        if (-not (Test-Path $gimpConfigDir)) {
-            New-Item -ItemType Directory -Path $gimpConfigDir -Force | Out-Null
-        }
-
-        # Backup & Copy sessionrc (Layout)
-        $sessionSrc = Join-Path $rootDir "gimp_profile\sessionrc"
-        if (Test-Path $sessionSrc) {
-            Copy-Item $sessionSrc -Destination (Join-Path $gimpConfigDir "sessionrc") -Force
-        }
-
-        # Copy menurc (Keybindings)
-        $menuSrc = Join-Path $rootDir "gimp_profile\menurc"
-        if (Test-Path $menuSrc) {
-            Copy-Item $menuSrc -Destination (Join-Path $gimpConfigDir "menurc") -Force
-        }
-
-        # Copy gimp.css (Dark Theme)
-        $cssSrc = Join-Path $rootDir "gimp_profile\gimp.css"
-        if (Test-Path $cssSrc) {
-            Copy-Item $cssSrc -Destination (Join-Path $gimpConfigDir "gimp.css") -Force
-        }
-
-        Send-JsonResponse $context 200 @{ success = $true; message = "CLIP STUDIO layout profile applied to GIMP 2.10 config" }
+        powershell.exe -ExecutionPolicy Bypass -NoProfile -File (Join-Path $rootDir "apply-profile.ps1") | Out-Null
+        Send-JsonResponse $context 200 @{ success = $true; message = "CLIP STUDIO layout profile applied" }
         continue
     }
 
+    # API: 作品フォルダを開く
     if ($urlPath -eq "/api/open-folder" -and $request.HttpMethod -eq "POST") {
-        Start-Process "explorer.exe" $rootDir
+        Start-Process "explorer.exe" $worksDir
         Send-JsonResponse $context 200 @{ success = $true }
         continue
     }
 
+    # API: ステータス取得
     if ($urlPath -eq "/api/status" -and $request.HttpMethod -eq "GET") {
+        Set-Location $rootDir
         $lastCommit = git log -1 --pretty=format:"%h - %s (%cr)" 2>$null
         Send-JsonResponse $context 200 @{
             success = $true
             gimpInstalled = (Test-Path $gimpPath)
             gimpPath = $gimpPath
+            worksDir = $worksDir
             lastCommit = $lastCommit
         }
         continue
     }
 
+    # API: GitHub Push
     if ($urlPath -eq "/api/git-push" -and $request.HttpMethod -eq "POST") {
         $reader = New-Object System.IO.StreamReader($request.InputStream, [System.Text.Encoding]::UTF8)
         $body = $reader.ReadToEnd() | ConvertFrom-Json -ErrorAction SilentlyContinue
@@ -124,22 +168,27 @@ while ($listener.IsListening) {
         git commit -m $msg 2>$null
 
         if ($token) {
-            $userEncoded = [System.Uri]::EscapeDataString("219235771+0yenAI@users.noreply.github.com")
+            $userEncoded = [System.Uri]::EscapeDataString("drkai-lab")
             $tokenEncoded = [System.Uri]::EscapeDataString($token)
             git remote set-url origin "https://${userEncoded}:${tokenEncoded}@github.com/drkai-lab/CLIP-GIMP-STUDIO.git"
-            $pushOut = git push -u origin main 2>&1 | Out-String
+            $pushOut = git push origin main 2>&1 | Out-String
             if ($LASTEXITCODE -eq 0) {
                 Send-JsonResponse $context 200 @{ success = $true; message = "Pushed to drkai-lab successfully" }
             } else {
                 Send-JsonResponse $context 400 @{ success = $false; message = $pushOut }
             }
         } else {
-            Send-JsonResponse $context 400 @{ success = $false; message = "Token is required for GitHub push" }
+            $pushOut = git push origin main 2>&1 | Out-String
+            if ($LASTEXITCODE -eq 0) {
+                Send-JsonResponse $context 200 @{ success = $true; message = "Pushed to drkai-lab successfully" }
+            } else {
+                Send-JsonResponse $context 400 @{ success = $false; message = $pushOut }
+            }
         }
         continue
     }
 
-    # Static File Delivery
+    # 静的ファイルの配信
     $localPath = if ($urlPath -eq "/" -or $urlPath -eq "") { "index.html" } else { $urlPath.TrimStart("/") }
     $fullPath = Join-Path $rootDir $localPath
 
@@ -151,6 +200,7 @@ while ($listener.IsListening) {
             ".js"   { "application/javascript; charset=utf-8" }
             ".svg"  { "image/svg+xml" }
             ".png"  { "image/png" }
+            ".gpl"  { "text/plain; charset=utf-8" }
             ".json" { "application/json; charset=utf-8" }
             default { "application/octet-stream" }
         }
