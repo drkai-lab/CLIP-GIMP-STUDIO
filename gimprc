@@ -1,0 +1,22 @@
+# GIMP Configuration File - CLIP STUDIO PAINT Styling (Clean-room re-creation)
+# Place in %APPDATA%\GIMP\2.10\gimprc
+
+(theme "Dark")
+(icon-theme "Color")
+(toolbox-wilber no)
+(toolbox-groups yes)
+(toolbox-color-area yes)
+(toolbox-foo-area no)
+(toolbox-image-area no)
+(toolbox-group-menu-mode hover-single-column)
+(show-splash yes)
+(single-window-mode yes)
+(snap-to-guides yes)
+(snap-to-grid yes)
+(snap-to-canvas yes)
+(default-view
+    (show-menubar yes)
+    (show-statusbar yes)
+    (show-rulers yes)
+    (show-scrollbars yes)
+    (show-selection yes))

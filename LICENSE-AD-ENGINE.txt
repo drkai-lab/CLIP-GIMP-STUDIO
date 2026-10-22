@@ -5,7 +5,7 @@ Copyright (c) 2026 drkai-lab. All Rights Reserved.
 
 This License governs the use, inclusion, and integration of the Claude Works
 Advertisement and Sponsored Splash Display Module ("Ad Engine"), including but
-not limited to `ad-engine.bundle.js`, `ad-service`, and related splash-ad
+not limited to `sync-ad.ps1`, `ad-engine.bundle.js`, `ad-service`, and related splash-ad
 display mechanisms within the CLIP GIMP STUDIO software.
 
 1. PROPRIETARY COMPONENT (BLACK-BOX MODULE)

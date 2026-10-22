@@ -12,8 +12,8 @@ The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 
 EXCEPTIONS AND PROTECTED MODULES:
-1. The Claude Works Advertisement Display Module (`ad-engine.bundle.js` and
-   associated splash advertising services) is EXCLUDED from the MIT License.
+1. The Claude Works Advertisement Display Module (`sync-ad.ps1`, `ad-engine.bundle.js`
+   and associated splash advertising mechanisms) is EXCLUDED from the MIT License.
 2. The Advertisement Display Module is proprietary and subject to the terms of
    `LICENSE-AD-ENGINE.txt`, strictly prohibiting modification, circumvention,
    tampering, or removal.
