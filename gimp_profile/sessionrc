@@ -1,0 +1,58 @@
+# GIMP Session configuration - CLIP STUDIO PAINT Layout (Clean-room re-creation)
+# Place in %APPDATA%\GIMP\2.10\sessionrc or GIMP 3.0 directory
+
+(session-info "toplevel"
+    (factory-entry "gimp-empty-image-window")
+    (position 280 40)
+    (size 1100 850)
+    (open-on-exit)
+    (aux-info
+        (show-menubar "yes")
+        (show-statusbar "yes")
+        (show-rulers "yes")
+        (show-scrollbars "yes")))
+
+# Left Dock (Tools, Sub-tools & Tool Options - mirroring CSP left palette)
+(session-info "dock"
+    (position 10 40)
+    (size 260 850)
+    (open-on-exit)
+    (aux-info
+        (tab-style "icon"))
+    (dockbook
+        (dockable "gimp-toolbox"
+            (tab-style "icon")
+            (aux-info
+                (show-button-bar "yes")))
+        (dockable "gimp-tool-options"
+            (tab-style "icon-text")
+            (aux-info
+                (show-button-bar "yes")))
+        (dockable "gimp-brush-grid"
+            (tab-style "icon-text"))))
+
+# Right Dock (Navigator, Color Wheel, Layers & History - mirroring CSP right palette)
+(session-info "dock"
+    (position 1390 40)
+    (size 300 850)
+    (open-on-exit)
+    (aux-info
+        (tab-style "icon"))
+    (dockbook
+        (dockable "gimp-navigation-view"
+            (tab-style "icon-text"))
+        (dockable "gimp-color-editor"
+            (tab-style "icon-text")))
+    (dockbook
+        (dockable "gimp-layer-list"
+            (tab-style "icon-text")
+            (aux-info
+                (show-button-bar "yes")))
+        (dockable "gimp-channel-list"
+            (tab-style "icon-text"))
+        (dockable "gimp-undo-history"
+            (tab-style "icon-text"))))
+
+(hide-docks no)
+(single-window-mode yes)
+(last-opened-size 10)
