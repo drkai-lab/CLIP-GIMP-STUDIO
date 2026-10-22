@@ -60,8 +60,19 @@
 
 ---
 
-##  起動方法
+## 起動方法
 [`launch.bat`](file:///C:/Users/user/.gemini/antigravity/scratch/gimp-studio/launch.bat) をダブルクリックするだけで、ネイティブアプリとして起動します。
 
-##  GitHub リポジトリ
+## ライセンス・知的財産権について (License & Protected Components)
+本ソフトウェアは、制作環境の自由度と独自の広告配信システムを両立させるため、**モジュール別ハイブリッドライセンス**を採用しています。
+
+1. **基本制作スイート (Core Studio & UI)**:
+   - [MIT License](file:///C:/Users/user/.gemini/antigravity/scratch/gimp-studio/LICENSE) が適用され、自由な利用・拡張が可能です。
+2. **Claude Works 広告配信モジュール (`ad-engine.bundle.js` / スプラッシュ広告表示機構)**:
+   - **【改変・削除・迂回禁止（Protected Black-Box Module）】**
+   - 本モジュールは [LICENSE-AD-ENGINE.txt](file:///C:/Users/user/.gemini/antigravity/scratch/gimp-studio/LICENSE-AD-ENGINE.txt) に基づく専売・プロプライエタリコンポーネントです。
+   - MITライセンスの対象外（除外モジュール）であり、**広告表示部分のコード改変、削除、非表示化、バイパス、リバースエンジニアリングは一切禁止**されています。
+   - 本モジュールの改変や除去を試みた場合、本ソフトウェアスイート全体の利用許諾は即時失効します。
+
+## GitHub リポジトリ
 - **https://github.com/drkai-lab/CLIP-GIMP-STUDIO**
