@@ -63,41 +63,131 @@ const defaultColorSet = [
   '#ffe4c4', '#f5deb3', '#d2b48c', '#8b4513'
 ];
 
-// サブツール定義
-const subToolsMap = {
+// 階層化ツールグループ定義 (CLIP STUDIO PAINT 完全準拠)
+const toolGroupsMap = {
   pen: [
-    { id: 'g-pen', name: 'Gペン', size: 8, opacity: 1.0, icon: '✒' },
-    { id: 'maru-pen', name: '丸ペン', size: 4, opacity: 1.0, icon: '🖋' },
-    { id: 'kabura-pen', name: 'カブラペン', size: 10, opacity: 1.0, icon: '🖊' },
-    { id: 'textured-pen', name: 'ざらつきペン', size: 12, opacity: 0.95, icon: '✏' },
-    { id: 'milli-pen', name: 'ミリペン', size: 3, opacity: 1.0, icon: '📍' }
+    {
+      groupId: 'pen-group',
+      groupName: 'ペン',
+      subtools: [
+        { id: 'g-pen', name: 'Gペン', size: 8, opacity: 1.0, hardness: 1.0, icon: '✒' },
+        { id: 'maru-pen', name: '丸ペン', size: 4, opacity: 1.0, hardness: 1.0, icon: '🖋' },
+        { id: 'kabura-pen', name: 'カブラペン', size: 10, opacity: 1.0, hardness: 0.9, icon: '🖊' },
+        { id: 'textured-pen', name: 'ざらつきペン', size: 12, opacity: 0.95, hardness: 0.8, icon: '✏' },
+        { id: 'effect-pen', name: '効果線用', size: 6, opacity: 1.0, hardness: 1.0, icon: '⚡' }
+      ]
+    },
+    {
+      groupId: 'marker-group',
+      groupName: 'マーカー',
+      subtools: [
+        { id: 'milli-pen', name: 'ミリペン', size: 3, opacity: 1.0, hardness: 1.0, icon: '📍' },
+        { id: 'sign-pen', name: 'サインペン', size: 14, opacity: 0.9, hardness: 0.8, icon: '🖍' },
+        { id: 'felt-pen', name: 'フェルトペン', size: 20, opacity: 0.85, hardness: 0.7, icon: '🖌' }
+      ]
+    }
   ],
   brush: [
-    { id: 'dense-water', name: '濃い水彩', size: 24, opacity: 0.8, icon: '🖌' },
-    { id: 'smooth-water', name: '滑らか水彩', size: 35, opacity: 0.6, icon: '🎨' },
-    { id: 'oil-paint', name: '厚塗り油彩', size: 20, opacity: 0.9, icon: '🖌' }
+    {
+      groupId: 'watercolor-group',
+      groupName: '水彩',
+      subtools: [
+        { id: 'dense-water', name: '濃い水彩', size: 24, opacity: 0.8, hardness: 0.7, icon: '🖌' },
+        { id: 'smooth-water', name: '滑らか水彩', size: 35, opacity: 0.6, hardness: 0.5, icon: '🎨' },
+        { id: 'trans-water', name: '透明水彩', size: 30, opacity: 0.5, hardness: 0.4, icon: '💧' }
+      ]
+    },
+    {
+      groupId: 'thick-paint-group',
+      groupName: '厚塗り',
+      subtools: [
+        { id: 'oil-paint', name: '厚塗り油彩', size: 20, opacity: 0.9, hardness: 0.9, icon: '🖌' },
+        { id: 'dry-gouache', name: 'ドライガッシュ', size: 28, opacity: 0.85, hardness: 0.8, icon: '🎨' }
+      ]
+    },
+    {
+      groupId: 'ink-group',
+      groupName: '墨',
+      subtools: [
+        { id: 'dark-ink', name: '濃墨', size: 20, opacity: 1.0, hardness: 0.9, icon: '🖤' },
+        { id: 'pale-ink', name: '薄墨', size: 30, opacity: 0.4, hardness: 0.5, icon: '🩶' }
+      ]
+    }
   ],
   airbrush: [
-    { id: 'soft-air', name: '柔らかエアブラシ', size: 60, opacity: 0.4, icon: '💨' },
-    { id: 'hard-air', name: '強めエアブラシ', size: 40, opacity: 0.7, icon: '💨' }
+    {
+      groupId: 'airbrush-group',
+      groupName: 'エアブラシ',
+      subtools: [
+        { id: 'soft-air', name: '柔らかエアブラシ', size: 60, opacity: 0.4, hardness: 0.2, icon: '💨' },
+        { id: 'hard-air', name: '強めエアブラシ', size: 40, opacity: 0.7, hardness: 0.6, icon: '💨' },
+        { id: 'tone-scrape', name: 'トーン削り', size: 30, opacity: 0.5, hardness: 0.4, icon: '✨' },
+        { id: 'spray', name: '飛沫', size: 50, opacity: 0.6, hardness: 0.8, icon: '💦' }
+      ]
+    }
   ],
   eraser: [
-    { id: 'hard-eraser', name: '硬め消しゴム', size: 16, opacity: 1.0, icon: '🧽' },
-    { id: 'soft-eraser', name: '柔らかめ消しゴム', size: 30, opacity: 0.6, icon: '🧼' }
+    {
+      groupId: 'eraser-group',
+      groupName: '消しゴム',
+      subtools: [
+        { id: 'hard-eraser', name: '硬め', size: 16, opacity: 1.0, hardness: 1.0, icon: '🧽' },
+        { id: 'soft-eraser', name: '柔らかめ', size: 30, opacity: 0.6, hardness: 0.4, icon: '🧼' },
+        { id: 'pinch-eraser', name: 'つまみ消し', size: 20, opacity: 0.8, hardness: 0.7, icon: '🤏' },
+        { id: 'gap-eraser', name: '隙間無く消す', size: 12, opacity: 1.0, hardness: 1.0, icon: '🧹' }
+      ]
+    }
   ],
   bucket: [
-    { id: 'paint-bucket', name: '編集レイヤーのみ参照', size: 1, opacity: 1.0, icon: '🪣' }
+    {
+      groupId: 'bucket-group',
+      groupName: '塗りつぶし',
+      subtools: [
+        { id: 'bucket-edit', name: '編集レイヤーのみ参照', size: 1, opacity: 1.0, hardness: 1.0, icon: '🪣' },
+        { id: 'bucket-all', name: '他レイヤーを参照', size: 1, opacity: 1.0, hardness: 1.0, icon: '🪣' },
+        { id: 'bucket-lasso', name: '囲って塗る', size: 1, opacity: 1.0, hardness: 1.0, icon: '🎯' }
+      ]
+    }
   ],
   select: [
-    { id: 'rect-select', name: '長方形選択', size: 1, opacity: 1.0, icon: '⬚' }
+    {
+      groupId: 'select-group',
+      groupName: '選択範囲',
+      subtools: [
+        { id: 'rect-select', name: '長方形選択', size: 1, opacity: 1.0, hardness: 1.0, icon: '⬚' },
+        { id: 'ellipse-select', name: '楕円選択', size: 1, opacity: 1.0, hardness: 1.0, icon: '◯' },
+        { id: 'lasso-select', name: '投げ縄選択', size: 1, opacity: 1.0, hardness: 1.0, icon: '➰' }
+      ]
+    }
   ],
   eyedropper: [
-    { id: 'eyedrop-all', name: '表示色を取得', size: 1, opacity: 1.0, icon: '🧪' }
+    {
+      groupId: 'eyedropper-group',
+      groupName: 'スポイト',
+      subtools: [
+        { id: 'eyedrop-all', name: '表示色を取得', size: 1, opacity: 1.0, hardness: 1.0, icon: '🧪' },
+        { id: 'eyedrop-layer', name: 'レイヤーから取得', size: 1, opacity: 1.0, hardness: 1.0, icon: '🧪' }
+      ]
+    }
   ],
   move: [
-    { id: 'pan-hand', name: '手のひら (パン)', size: 1, opacity: 1.0, icon: '✋' }
+    {
+      groupId: 'move-group',
+      groupName: '移動',
+      subtools: [
+        { id: 'pan-hand', name: '手のひら (パン)', size: 1, opacity: 1.0, hardness: 1.0, icon: '✋' },
+        { id: 'move-layer', name: 'レイヤー移動', size: 1, opacity: 1.0, hardness: 1.0, icon: '✥' }
+      ]
+    }
   ]
 };
+
+// クリスタ標準ブラシサイズプリセット一覧 (px)
+const defaultBrushSizePresets = [
+  0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0,
+  6.0, 8.0, 10.0, 12.0, 15.0, 20.0, 25.0, 30.0,
+  40.0, 50.0, 60.0, 80.0, 100.0, 120.0, 150.0
+];
 
 // ==========================================
 // 初期化
@@ -108,6 +198,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   initColorSet();
   initCanvasEvents();
   initNavigatorEvents();
+  renderToolGroupTabs();
   renderSubTools();
   renderLayers();
   await loadWorksFromBackend();
@@ -931,61 +1022,137 @@ function changeLayerOpacity(val) {
 }
 
 // ==========================================
-// 6. サブツール & プロパティ
+// 6. ツールグループ・サブツール・プロパティ・ブラシサイズ
 // ==========================================
+studioState.currentGroupIndex = 0;
+
 function selectTool(toolKey) {
   studioState.currentTool = toolKey;
+  studioState.currentGroupIndex = 0;
+
   document.querySelectorAll('.tool-btn').forEach(btn => {
     btn.classList.toggle('active', btn.getAttribute('data-tool') === toolKey);
   });
+
+  renderToolGroupTabs();
+  renderSubTools();
+}
+
+function renderToolGroupTabs() {
+  const container = document.getElementById('tool-group-tabs');
+  if (!container) return;
+
+  const groups = toolGroupsMap[studioState.currentTool] || [];
+  container.innerHTML = groups.map((g, idx) => `
+    <button class="tool-group-tab ${idx === studioState.currentGroupIndex ? 'active' : ''}" onclick="selectToolGroup(${idx})">
+      ${escapeHtml(g.groupName)}
+    </button>
+  `).join('');
+}
+
+function selectToolGroup(idx) {
+  studioState.currentGroupIndex = idx;
+  renderToolGroupTabs();
   renderSubTools();
 }
 
 function renderSubTools() {
-  const subtools = subToolsMap[studioState.currentTool] || [];
-  const list = document.getElementById('subtool-list');
-  const header = document.getElementById('subtool-header-title');
-  if (header) header.textContent = `サブツール [${studioState.currentTool.toUpperCase()}]`;
+  const groups = toolGroupsMap[studioState.currentTool] || [];
+  const currentGroup = groups[studioState.currentGroupIndex] || groups[0];
+  const subtools = currentGroup ? currentGroup.subtools : [];
 
+  const list = document.getElementById('subtool-list');
   if (list) {
     list.innerHTML = subtools.map((st, idx) => `
-      <div class="subtool-item ${idx === 0 ? 'active' : ''}" onclick="selectSubTool('${st.id}', ${st.size}, ${st.opacity})">
+      <div class="subtool-item ${st.id === studioState.currentSubTool ? 'active' : (idx === 0 && !studioState.currentSubTool ? 'active' : '')}" onclick="selectSubTool('${st.id}', '${st.name}', ${st.size}, ${st.opacity}, ${st.hardness})">
         <span>${st.icon}</span>
-        <span>${st.name}</span>
+        <span>${escapeHtml(st.name)}</span>
       </div>
     `).join('');
   }
+
+  // 初期選択
+  if (subtools.length > 0 && (!studioState.currentSubTool || !subtools.find(s => s.id === studioState.currentSubTool))) {
+    const first = subtools[0];
+    selectSubTool(first.id, first.name, first.size, first.opacity, first.hardness);
+  }
+
+  renderBrushSizePresets();
 }
 
-function selectSubTool(id, size, opacity) {
+function selectSubTool(id, name, size, opacity, hardness) {
   studioState.currentSubTool = id;
   document.querySelectorAll('.subtool-item').forEach(el => {
-    el.classList.toggle('active', el.textContent.includes(id));
+    el.classList.toggle('active', el.textContent.includes(name));
   });
+
+  // ツールプロパティのタイトル更新
+  const propTitle = document.getElementById('prop-header-title');
+  if (propTitle) propTitle.textContent = `ツールプロパティ [${name}]`;
+
   updateBrushProp('size', size);
   updateBrushProp('opacity', Math.round(opacity * 100));
+  updateBrushProp('hardness', Math.round(hardness * 100));
 }
 
 function updateBrushProp(prop, val) {
   if (prop === 'size') {
     studioState.brushSize = parseFloat(val);
-    document.getElementById('prop-size').value = val;
-    document.getElementById('prop-size-val').textContent = `${parseFloat(val).toFixed(1)}`;
+    const pSize = document.getElementById('prop-size');
+    const pSizeVal = document.getElementById('prop-size-val');
+    if (pSize) pSize.value = val;
+    if (pSizeVal) pSizeVal.textContent = `${parseFloat(val).toFixed(1)}`;
+    highlightActiveBrushSize();
   } else if (prop === 'opacity') {
     studioState.brushOpacity = parseFloat(val) / 100;
-    document.getElementById('prop-opacity').value = val;
-    document.getElementById('prop-opacity-val').textContent = `${val}%`;
+    const pOp = document.getElementById('prop-opacity');
+    const pOpVal = document.getElementById('prop-opacity-val');
+    if (pOp) pOp.value = val;
+    if (pOpVal) pOpVal.textContent = `${val}%`;
   } else if (prop === 'hardness') {
     studioState.brushHardness = parseFloat(val) / 100;
-    document.getElementById('prop-hardness').value = val;
-    document.getElementById('prop-hardness-val').textContent = `${val}%`;
+    const pHard = document.getElementById('prop-hardness');
+    const pHardVal = document.getElementById('prop-hardness-val');
+    if (pHard) pHard.value = val;
+    if (pHardVal) pHardVal.textContent = `${val}%`;
   } else if (prop === 'stabilizer') {
     studioState.stabilizer = parseInt(val);
-    document.getElementById('prop-stabilizer').value = val;
-    document.getElementById('prop-stabilizer-val').textContent = val;
+    const pStab = document.getElementById('prop-stabilizer');
+    const pStabVal = document.getElementById('prop-stabilizer-val');
+    if (pStab) pStab.value = val;
+    if (pStabVal) pStabVal.textContent = val;
   } else if (prop === 'pressure') {
     studioState.pressure = !!val;
   }
+}
+
+// ブラシサイズプリセットパレット
+function renderBrushSizePresets() {
+  const grid = document.getElementById('brush-size-presets-grid');
+  if (!grid) return;
+
+  grid.innerHTML = defaultBrushSizePresets.map(sz => {
+    const dotSize = Math.max(2, Math.min(12, Math.round(sz / 8) + 2));
+    return `
+      <div class="brush-size-chip" data-size="${sz}" onclick="setBrushSizePreset(${sz})" title="${sz} px">
+        <span class="brush-size-dot" style="width:${dotSize}px; height:${dotSize}px;"></span>
+        <span>${sz}</span>
+      </div>
+    `;
+  }).join('');
+
+  highlightActiveBrushSize();
+}
+
+function setBrushSizePreset(sz) {
+  updateBrushProp('size', sz);
+}
+
+function highlightActiveBrushSize() {
+  document.querySelectorAll('.brush-size-chip').forEach(chip => {
+    const chipSz = parseFloat(chip.getAttribute('data-size'));
+    chip.classList.toggle('active', Math.abs(chipSz - studioState.brushSize) < 0.1);
+  });
 }
 
 // ==========================================

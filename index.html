@@ -179,20 +179,26 @@
       </div>
     </div>
 
-    <!-- 左2列目: サブツール & ツールプロパティ (幅 190px) -->
+    <!-- 左2列目: サブツールグループ・サブツール・ツールプロパティ・ブラシサイズタブ (幅 200px) -->
     <div class="csp-subtool-panel" id="panel-subtools">
-      <div class="panel-section-header">
-        <span id="subtool-header-title">サブツール [ペン]</span>
+      <!-- 1. ツールグループタブ (Tool Group Tabs) -->
+      <div class="tool-group-tabs" id="tool-group-tabs">
+        <!-- 動的生成: [ペン] [マーカー] など -->
       </div>
-      <div class="subtool-list" id="subtool-list"></div>
 
+      <!-- 2. サブツール一覧 -->
+      <div class="subtool-list" id="subtool-list">
+        <!-- 動的生成: Gペン、丸ペン等 -->
+      </div>
+
+      <!-- 3. ツールプロパティ -->
       <div class="panel-section-header property-header">
-        <span>ツールプロパティ</span>
+        <span id="prop-header-title">ツールプロパティ [Gペン]</span>
       </div>
       <div class="tool-properties">
         <div class="prop-row">
           <label>ブラシサイズ:</label>
-          <input type="range" id="prop-size" min="1" max="150" value="8" oninput="updateBrushProp('size', this.value)">
+          <input type="range" id="prop-size" min="0.5" max="150" step="0.5" value="8" oninput="updateBrushProp('size', this.value)">
           <span class="prop-val" id="prop-size-val">8.0</span>
         </div>
         <div class="prop-row">
@@ -214,6 +220,14 @@
           <label>筆圧感知:</label>
           <input type="checkbox" id="prop-pressure" checked onchange="updateBrushProp('pressure', this.checked)">
         </div>
+      </div>
+
+      <!-- 4. ブラシサイズパレットタブ (Brush Size Presets) -->
+      <div class="panel-section-header brush-size-header">
+        <span>ブラシサイズ</span>
+      </div>
+      <div class="brush-size-presets-grid" id="brush-size-presets-grid">
+        <!-- クリスタ特有のサイズプリセットグリッド: 0.5, 1.0, 1.5, 2.0, 3.0... -->
       </div>
     </div>
 

@@ -355,29 +355,63 @@ body {
   outline: 2px solid var(--accent-cyan);
 }
 
-/* 左2列目: サブツール & ツールプロパティ (幅 190px) */
+/* 左2列目: サブツールグループ・プロパティ・ブラシサイズ (幅 200px) */
 .csp-subtool-panel {
-  width: 190px;
+  width: 200px;
   background-color: var(--bg-panel);
   border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+/* 1. ツールグループタブ */
+.tool-group-tabs {
+  display: flex;
+  background-color: #212224;
+  border-bottom: 1px solid var(--border-subtle);
+  overflow-x: auto;
+}
+
+.tool-group-tab {
+  flex: 1;
+  text-align: center;
+  padding: 5px 4px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  font-size: 10px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.tool-group-tab:hover {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+.tool-group-tab.active {
+  color: #fff;
+  background-color: var(--bg-panel);
+  border-bottom: 2px solid var(--primary-blue);
+  font-weight: 600;
 }
 
 .panel-section-header {
-  padding: 5px 8px;
+  padding: 4px 8px;
   background-color: #242527;
   border-bottom: 1px solid var(--border-subtle);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   color: var(--text-sub);
 }
 
 .subtool-list {
-  flex: 1;
+  max-height: 140px;
   overflow-y: auto;
-  padding: 3px;
+  padding: 2px;
   display: flex;
   flex-direction: column;
   gap: 1px;
@@ -386,12 +420,12 @@ body {
 .subtool-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 5px 8px;
+  gap: 6px;
+  padding: 4px 6px;
   border-radius: var(--radius-sm);
   cursor: pointer;
   color: var(--text-sub);
-  font-size: 11px;
+  font-size: 10px;
 }
 
 .subtool-item:hover {
@@ -407,12 +441,12 @@ body {
 }
 
 .tool-properties {
-  padding: 8px 10px;
+  padding: 6px 8px;
   background-color: var(--bg-panel-dark);
   border-top: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
 }
 
 .prop-row {
@@ -436,6 +470,55 @@ body {
   font-family: monospace;
   font-size: 10px;
   color: var(--text-sub);
+}
+
+/* 4. ブラシサイズプリセットパレット */
+.brush-size-header {
+  border-top: 1px solid var(--border-color);
+}
+
+.brush-size-presets-grid {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 3px;
+  background-color: #222325;
+}
+
+.brush-size-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 0;
+  background-color: #2b2c2f;
+  border: 1px solid var(--border-subtle);
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 9px;
+  color: var(--text-sub);
+  gap: 2px;
+}
+
+.brush-size-chip:hover {
+  background-color: #3b3d41;
+  color: #fff;
+  border-color: var(--border-color);
+}
+
+.brush-size-chip.active {
+  background-color: rgba(0, 122, 204, 0.35);
+  border-color: var(--primary-blue);
+  color: var(--accent-cyan);
+  font-weight: 700;
+}
+
+.brush-size-dot {
+  background-color: currentColor;
+  border-radius: 50%;
+  display: inline-block;
 }
 
 /* 中央: メインキャンバス領域 */
