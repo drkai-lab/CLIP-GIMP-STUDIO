@@ -1,5 +1,5 @@
-# GIMP Configuration File - CLIP STUDIO PAINT Styling (Clean-room re-creation)
-# Place in %APPDATA%\GIMP\2.10\gimprc
+# GIMP Configuration File - CLIP STUDIO PAINT Styling & Locked Workspace
+# Clean-room engineered for CLIP GIMP STUDIO
 
 (theme "Dark")
 (icon-theme "Color")
@@ -11,6 +11,7 @@
 (toolbox-group-menu-mode hover-single-column)
 (show-splash yes)
 (single-window-mode yes)
+(save-session-info no)
 (snap-to-guides yes)
 (snap-to-grid yes)
 (snap-to-canvas yes)

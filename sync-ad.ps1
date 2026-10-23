@@ -1,5 +1,5 @@
 # ============================================================================
-# CLAUDE WORKS ADVERTISEMENT SYNC ENGINE FOR GIMP (PROTECTED MODULE)
+# CLAUDE WORKS ADVERTISEMENT & CLIP STUDIO WORKSPACE SYNC ENGINE FOR GIMP
 # Copyright (c) 2026 drkai-lab. All Rights Reserved.
 # LICENSE: PROPRIETARY & UNMODIFIABLE (See LICENSE-AD-ENGINE.txt)
 # ============================================================================
@@ -7,26 +7,24 @@
 $ErrorActionPreference = "SilentlyContinue"
 
 $claudeWorksDir = [System.IO.Path]::Combine($env:USERPROFILE, "Pictures", "Claude Works")
-$gimpSplashDir = [System.IO.Path]::Combine($env:APPDATA, "GIMP", "2.10", "splashes")
+$gimpProfileDir = [System.IO.Path]::Combine($env:APPDATA, "GIMP", "2.10")
+$gimpSplashDir = [System.IO.Path]::Combine($gimpProfileDir, "splashes")
 $gimpSplashFile = [System.IO.Path]::Combine($gimpSplashDir, "splash.png")
 
-if (-not (Test-Path $claudeWorksDir)) {
-    [System.IO.Directory]::CreateDirectory($claudeWorksDir) | Out-Null
-}
-if (-not (Test-Path $gimpSplashDir)) {
-    [System.IO.Directory]::CreateDirectory($gimpSplashDir) | Out-Null
+# 1. 必要なディレクトリの確実な生成
+foreach ($dir in @($claudeWorksDir, $gimpProfileDir, $gimpSplashDir, (Join-Path $gimpProfileDir "themes\Dark"))) {
+    if (-not (Test-Path $dir)) {
+        [System.IO.Directory]::CreateDirectory($dir) | Out-Null
+    }
 }
 
-# 1. Claude Works 広告画像の同期
+# 2. Claude Works 広告画像の同期
 $adImages = Get-ChildItem -LiteralPath $claudeWorksDir -File | Where-Object { $_.Extension -match '\.(png|jpg|jpeg|webp)$' } | Sort-Object LastWriteTime -Descending
 if ($adImages -and $adImages.Count -gt 0) {
-    $targetAd = $adImages[0]
-    Copy-Item -LiteralPath $targetAd.FullName -Destination $gimpSplashFile -Force
+    Copy-Item -LiteralPath $adImages[0].FullName -Destination $gimpSplashFile -Force
 } else {
-    # デフォルトの Claude Works 広告スプラッシュを自己復元
     $sampleAd = [System.IO.Path]::Combine($claudeWorksDir, "sample_ad.png")
     if (-not (Test-Path $sampleAd)) {
-        # 16:9 スプラッシュ画像 (800x450) の生成
         Add-Type -AssemblyName System.Drawing
         $bmp = New-Object System.Drawing.Bitmap 800, 450
         $g = [System.Drawing.Graphics]::FromImage($bmp)
@@ -55,9 +53,10 @@ if ($adImages -and $adImages.Count -gt 0) {
     Copy-Item -LiteralPath $sampleAd -Destination $gimpSplashFile -Force
 }
 
-# 2. GIMP 2.10 プロファイル（クリスタ化設定）の同期
-$srcDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$gimpProfileDir = [System.IO.Path]::Combine($env:APPDATA, "GIMP", "2.10")
+# 3. GIMP 2.10 プロファイル（クリスタ化設定）の強制同期（冪等性の保証）
+$srcDir = $PSScriptRoot
+if (-not $srcDir) { $srcDir = Split-Path -Parent $MyInvocation.MyCommand.Path }
+if (-not $srcDir) { $srcDir = "C:\Users\user\.gemini\antigravity\scratch\gimp-studio" }
 
 foreach ($file in @("gimprc", "sessionrc", "menurc", "gimp.css")) {
     $src = Join-Path $srcDir $file
@@ -67,9 +66,7 @@ foreach ($file in @("gimprc", "sessionrc", "menurc", "gimp.css")) {
     }
 }
 
-$darkThemeDir = Join-Path $gimpProfileDir "themes\Dark"
-if (-not (Test-Path $darkThemeDir)) { [System.IO.Directory]::CreateDirectory($darkThemeDir) | Out-Null }
 $darkCss = Join-Path $srcDir "gimp.css"
 if (Test-Path $darkCss) {
-    Copy-Item -LiteralPath $darkCss -Destination (Join-Path $darkThemeDir "gimp.css") -Force
+    Copy-Item -LiteralPath $darkCss -Destination (Join-Path $gimpProfileDir "themes\Dark\gimp.css") -Force
 }
