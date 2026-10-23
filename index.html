@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CLIP GIMP STUDIO - Uncompromising Cleanroom Suite</title>
+  <title>イラスト 20261023* (1600 x 1200px 72dpi 72.0% : RGB:sRGB IEC61966-2.1) - CLIP GIMP STUDIO PRO</title>
   <link rel="stylesheet" href="app.css">
 </head>
 <body class="mode-paint">
@@ -17,7 +17,7 @@
         <div class="splash-brand">
           <svg viewBox="0 0 24 24" class="splash-logo"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
           <span class="splash-app-title">CLIP GIMP STUDIO</span>
-          <span class="splash-version">v1.5.0 Pro</span>
+          <span class="splash-version">v1.5.0 Professional</span>
         </div>
         <button class="splash-close-btn" onclick="closeSplashScreen()" title="閉じる">&times;</button>
       </div>
@@ -25,7 +25,6 @@
       <!-- 広告メディア掲載エリア (Claude Works 画像・動画) -->
       <div class="splash-ad-container" id="splash-ad-container">
         <div class="ad-media-wrapper" id="ad-media-wrapper">
-          <!-- JavaScript で Claude Works 内の画像または動画 (<video>) を注入 -->
           <div class="ad-loading-text">Claude Works の広告を読み込み中...</div>
         </div>
         <div class="ad-badge-overlay">
@@ -37,8 +36,8 @@
       <div class="splash-footer">
         <div class="splash-footer-left">
           <button class="btn btn-secondary btn-sm" onclick="ClaudeWorksAdEngine.openClaudeWorksFolder()" title="自分の画像・動画広告を追加">
-            <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
-            <span>Claude Works フォルダを開く</span>
+            <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+            <span>Claude Works 広告フォルダを開く</span>
           </button>
           <span class="ad-count-label" id="ad-count-label">全 1 件の広告</span>
         </div>
@@ -53,147 +52,144 @@
   </div>
 
   <!-- ======================================================== -->
-  <!-- 1. トップメニューバー (CLIP STUDIO Menu Bar) -->
+  <!-- 1. トップタイトル＆メニューバー (CLIP STUDIO Menu Bar) -->
   <!-- ======================================================== -->
-  <nav class="csp-top-menubar">
-    <div class="menu-brand">
-      <span class="brand-title">CLIP GIMP STUDIO</span>
-      <span class="brand-badge">PAINT PRO</span>
+  <header class="csp-app-header">
+    <div class="csp-title-strip">
+      <span class="window-title-text" id="window-title-text">イラスト 20261023* (1600 x 1200px 72dpi 72.0% : RGB:sRGB IEC61966-2.1) - CLIP GIMP STUDIO PRO</span>
+      <div class="window-controls">
+        <button class="win-btn win-min" title="最小化">&#x2015;</button>
+        <button class="win-btn win-max" title="最大化">&#x25A2;</button>
+        <button class="win-btn win-close" title="閉じる" onclick="window.close()">&times;</button>
+      </div>
     </div>
-    <ul class="menubar-list">
-      <li class="menubar-item" onclick="toggleMenuDropdown('menu-file')">ファイル(F)
-        <ul id="menu-file" class="dropdown-menu">
-          <li onclick="openNewCanvasModal()">新規作成... (Ctrl+N)</li>
-          <li onclick="triggerFileInput()">画像ファイルを開く... (Ctrl+O)</li>
-          <li class="menu-divider"></li>
-          <li onclick="saveCanvasToWorks()">作品フォルダに保存 (Ctrl+S)</li>
-          <li onclick="exportImage('png')">PNG 画像として書き出し...</li>
-          <li onclick="exportImage('jpg')">JPEG 画像として書き出し...</li>
-          <li class="menu-divider"></li>
-          <li onclick="launchInGimp()">GIMP でこの作品を開く (Ctrl+G)</li>
-          <li onclick="switchAppMode('portal')">作品管理ポータルへ移動</li>
-        </ul>
-      </li>
-      <li class="menubar-item" onclick="toggleMenuDropdown('menu-edit')">編集(E)
-        <ul id="menu-edit" class="dropdown-menu">
-          <li onclick="undo()">元に戻す (Ctrl+Z)</li>
-          <li onclick="redo()">やり直し (Ctrl+Y)</li>
-          <li class="menu-divider"></li>
-          <li onclick="clearCurrentLayer()">レイヤーの全消去 (Delete)</li>
-          <li onclick="fillCanvas()">塗りつぶし (Alt+Delete)</li>
-        </ul>
-      </li>
-      <li class="menubar-item" onclick="toggleMenuDropdown('menu-layer')">レイヤー(L)
-        <ul id="menu-layer" class="dropdown-menu">
-          <li onclick="addNewLayer()">新規ラスターレイヤー (Ctrl+Shift+N)</li>
-          <li onclick="addNewDraftLayer()">新規下描きレイヤー</li>
-          <li onclick="duplicateActiveLayer()">レイヤーを複製 (Ctrl+J)</li>
-          <li onclick="deleteActiveLayer()">レイヤーを削除</li>
-          <li class="menu-divider"></li>
-          <li onclick="mergeDownLayer()">下のレイヤーと結合 (Ctrl+E)</li>
-          <li onclick="toggleClipping()">下のレイヤーでクリッピング</li>
-          <li onclick="toggleAlphaLock()">透明ピクセルをロック</li>
-        </ul>
-      </li>
-      <li class="menubar-item" onclick="toggleMenuDropdown('menu-view')">表示(V)
-        <ul id="menu-view" class="dropdown-menu">
-          <li onclick="adjustZoom(20)">拡大 (Ctrl++)</li>
-          <li onclick="adjustZoom(-20)">縮小 (Ctrl+-)</li>
-          <li onclick="resetZoom()">100% 表示 (Ctrl+1)</li>
-          <li onclick="fitView()">全体表示 (Ctrl+0)</li>
-          <li class="menu-divider"></li>
-          <li onclick="toggleFlipH()">左右反転 (H)</li>
-          <li onclick="toggleFlipV()">上下反転</li>
-          <li onclick="resetRotate()">回転をリセット (0°)</li>
-          <li class="menu-divider"></li>
-          <li onclick="toggleGrid()">グリッド (方眼線) を表示</li>
-          <li onclick="toggleSymmetryRuler()">対称定規 (ミラー描画) を有効化</li>
-        </ul>
-      </li>
-      <li class="menubar-item" onclick="toggleMenuDropdown('menu-filter')">フィルター(I)
-        <ul id="menu-filter" class="dropdown-menu">
-          <li onclick="applyFilter('blur')">ガウスぼかし...</li>
-          <li onclick="applyFilter('brightness')">明るさ・コントラスト...</li>
-          <li onclick="applyFilter('invert')">階調の反転 (ネガポジ)</li>
-        </ul>
-      </li>
-      <li class="menubar-item" onclick="toggleMenuDropdown('menu-window')">ウィンドウ(W)
-        <ul id="menu-window" class="dropdown-menu">
-          <li onclick="toggleWidget('navigator')">✓ ナビゲーター</li>
-          <li onclick="toggleWidget('color')">✓ カラーサークル</li>
-          <li onclick="toggleWidget('layers')">✓ レイヤー</li>
-          <li onclick="toggleWidget('subtools')">✓ サブツール / プロパティ</li>
-          <li class="menu-divider"></li>
-          <li onclick="openSplashScreen()">スプラッシュ画面 (広告) を表示...</li>
-        </ul>
-      </li>
-    </ul>
-    <div class="menubar-right">
-      <button class="btn-gimp-bridge" onclick="launchInGimp()" title="このキャンバスを GIMP に送信して開く">
-        <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-        <span>GIMP で開く</span>
-      </button>
-      <button class="btn-portal-switch" onclick="switchAppMode('portal')" title="作品・素材管理ポータル">
-        <span>作品管理ポータル</span>
-      </button>
-    </div>
-  </nav>
+
+    <nav class="csp-top-menubar">
+      <ul class="menubar-list">
+        <li class="menubar-item" onclick="toggleMenuDropdown('menu-file')">ファイル(F)
+          <ul id="menu-file" class="dropdown-menu">
+            <li onclick="openNewCanvasModal()">新規作成... (Ctrl+N)</li>
+            <li onclick="triggerFileInput()">開く... (Ctrl+O)</li>
+            <li class="menu-divider"></li>
+            <li onclick="saveCanvasToWorks()">上書き保存 (Ctrl+S)</li>
+            <li onclick="exportImage('png')">別名で保存... (PNG)</li>
+            <li class="menu-divider"></li>
+            <li onclick="launchInGimp()">GIMP 2.10 で開く (Ctrl+G)</li>
+            <li onclick="openSplashScreen()">スプラッシュ画面 (広告) を表示...</li>
+          </ul>
+        </li>
+        <li class="menubar-item" onclick="toggleMenuDropdown('menu-edit')">編集(E)
+          <ul id="menu-edit" class="dropdown-menu">
+            <li onclick="undo()">取り消し (Ctrl+Z)</li>
+            <li onclick="redo()">やり直し (Ctrl+Y)</li>
+            <li class="menu-divider"></li>
+            <li onclick="clearCurrentLayer()">消去 (Delete)</li>
+            <li onclick="fillCanvas()">塗りつぶし (Alt+Delete)</li>
+          </ul>
+        </li>
+        <li class="menubar-item">ページ管理(P)</li>
+        <li class="menubar-item">アニメーション(A)</li>
+        <li class="menubar-item" onclick="toggleMenuDropdown('menu-layer')">レイヤー(L)
+          <ul id="menu-layer" class="dropdown-menu">
+            <li onclick="addNewLayer()">新規ラスターレイヤー</li>
+            <li onclick="duplicateActiveLayer()">レイヤーを複製</li>
+            <li onclick="deleteActiveLayer()">レイヤーを削除</li>
+            <li class="menu-divider"></li>
+            <li onclick="mergeDownLayer()">下のレイヤーと結合</li>
+            <li onclick="toggleClipping()">下のレイヤーでクリッピング</li>
+            <li onclick="toggleAlphaLock()">透明ピクセルをロック</li>
+          </ul>
+        </li>
+        <li class="menubar-item">選択範囲(S)</li>
+        <li class="menubar-item" onclick="toggleMenuDropdown('menu-view')">表示(V)
+          <ul id="menu-view" class="dropdown-menu">
+            <li onclick="adjustZoom(15)">拡大 (Ctrl++)</li>
+            <li onclick="adjustZoom(-15)">縮小 (Ctrl+-)</li>
+            <li onclick="resetZoom()">100% 表示 (Ctrl+1)</li>
+            <li onclick="fitView()">全体表示 (Ctrl+0)</li>
+            <li onclick="toggleFlipH()">左右反転 (H)</li>
+            <li onclick="resetRotate()">回転をリセット (0°)</li>
+          </ul>
+        </li>
+        <li class="menubar-item">フィルター(I)</li>
+        <li class="menubar-item">ウィンドウ(W)</li>
+        <li class="menubar-item">ヘルプ(H)</li>
+      </ul>
+    </nav>
+  </header>
 
   <!-- ======================================================== -->
-  <!-- 2. コマンドバー (Command Bar) -->
+  <!-- 2. コマンドバー (Command Bar - クリスタEX完全準拠) -->
   <!-- ======================================================== -->
   <div class="csp-command-bar">
+    <div class="cmd-collapse-toggle" title="パレット折りたたみ">
+      <span>||</span><span>&lt;&lt;</span><span>&lt;</span>
+    </div>
+
     <div class="cmd-group">
+      <button class="cmd-btn" onclick="saveCanvasToWorks()" title="クイック保存 (Ctrl+S)">
+        <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+      </button>
       <button class="cmd-btn" onclick="openNewCanvasModal()" title="新規作成 (Ctrl+N)">
         <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
       </button>
-      <button class="cmd-btn" onclick="triggerFileInput()" title="画像を開く (Ctrl+O)">
+      <button class="cmd-btn" onclick="triggerFileInput()" title="開く (Ctrl+O)">
         <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
-      </button>
-      <button class="cmd-btn" onclick="saveCanvasToWorks()" title="作品フォルダに保存 (Ctrl+S)">
-        <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
       </button>
     </div>
 
     <div class="cmd-separator"></div>
 
     <div class="cmd-group">
-      <button class="cmd-btn" onclick="undo()" title="元に戻す (Ctrl+Z)">
+      <button class="cmd-btn" onclick="undo()" title="取り消し (Ctrl+Z)">
         <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
       </button>
       <button class="cmd-btn" onclick="redo()" title="やり直し (Ctrl+Y)">
         <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
       </button>
-      <button class="cmd-btn" onclick="clearCurrentLayer()" title="レイヤー消去 (Delete)">
+      <button class="cmd-btn" onclick="clearCurrentLayer()" title="消去 (Delete)">
         <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
       </button>
       <button class="cmd-btn" onclick="fillCanvas()" title="塗りつぶし (Alt+Delete)">
         <svg viewBox="0 0 24 24"><path d="M19 11l-8-8-8.5 8.5a5.5 5.5 0 0 0 7.78 7.78L19 11z"></path><path d="M22 20a2 2 0 1 1-4 0c0-1.6 2-4 2-4s2 2.4 2 4z"></path></svg>
+      </button>
+      <button class="cmd-btn" title="拡大・縮小・回転 (変形)">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" stroke-dasharray="2 2"></rect><circle cx="3" cy="3" r="2"></circle><circle cx="21" cy="3" r="2"></circle><circle cx="3" cy="21" r="2"></circle><circle cx="21" cy="21" r="2"></circle></svg>
       </button>
     </div>
 
     <div class="cmd-separator"></div>
 
     <div class="cmd-group">
-      <button class="cmd-btn" onclick="adjustZoom(15)" title="拡大 (Ctrl++)">
-        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="11" y1="8" x2="11" y2="14"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
-      </button>
-      <button class="cmd-btn" onclick="adjustZoom(-15)" title="縮小 (Ctrl+-)">
-        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line><line x1="8" y1="11" x2="14" y2="11"></line></svg>
-      </button>
-      <button class="cmd-btn cmd-txt-btn" onclick="resetZoom()" title="100% 表示 (Ctrl+1)">100%</button>
-      <button class="cmd-btn cmd-txt-btn" onclick="fitView()" title="ウィンドウに合わせる (Ctrl+0)">Fit</button>
       <button class="cmd-btn" id="cmd-btn-fliph" onclick="toggleFlipH()" title="キャンバス左右反転 (H)">
         <svg viewBox="0 0 24 24"><polyline points="17 8 21 12 17 16"></polyline><line x1="3" y1="12" x2="21" y2="12"></line><polyline points="7 16 3 12 7 8"></polyline></svg>
       </button>
-      <button class="cmd-btn" onclick="resetRotate()" title="回転をリセット (0°)">
+      <button class="cmd-btn" onclick="toggleFlipV()" title="キャンバス上下反転">
+        <svg viewBox="0 0 24 24"><polyline points="8 17 12 21 16 17"></polyline><line x1="12" y1="3" x2="12" y2="21"></line><polyline points="16 7 12 3 8 7"></polyline></svg>
+      </button>
+      <button class="cmd-btn" onclick="resetRotate()" title="回転をリセット (0.0°)">
         <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><polyline points="21 3 21 8 16 8"></polyline></svg>
       </button>
-      <button class="cmd-btn" id="cmd-btn-symm" onclick="toggleSymmetryRuler()" title="対称定規 (左右対称ミラー描画)">
-        <svg viewBox="0 0 24 24"><line x1="12" y1="2" x2="12" y2="22" stroke-dasharray="2 2"></line><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="12" r="3"></circle></svg>
+      <button class="cmd-btn" onclick="resetZoom()" title="表示位置を初期化 (100%)">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><text x="7" y="16" font-size="10" fill="currentColor">1:1</text></svg>
+      </button>
+      <button class="cmd-btn" onclick="fitView()" title="全体表示 (Fit)">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"></rect><polyline points="9 3 9 9 3 9"></polyline><polyline points="15 3 15 9 21 9"></polyline><polyline points="9 21 9 15 3 15"></polyline><polyline points="15 21 15 15 21 15"></polyline></svg>
+      </button>
+      <button class="cmd-btn" id="cmd-btn-snap" title="スナップ">
+        <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
       </button>
       <button class="cmd-btn" id="cmd-btn-grid" onclick="toggleGrid()" title="グリッド (方眼線)">
         <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line></svg>
+      </button>
+    </div>
+
+    <div class="cmd-separator"></div>
+
+    <div class="cmd-group">
+      <button class="cmd-btn btn-launch-gimp" onclick="launchInGimp()" title="GIMP 2.10 本体で開く">
+        <svg viewBox="0 0 24 24" style="stroke:#00a8ff;"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        <span style="font-size:10px; margin-left:3px; color:#00a8ff; font-weight:bold;">GIMP連携</span>
       </button>
     </div>
   </div>
@@ -201,88 +197,171 @@
   <input type="file" id="file-input-hidden" style="display:none;" accept="image/*" onchange="handleFileOpen(event)">
 
   <!-- ======================================================== -->
-  <!-- 3. PAINT ワークスペース -->
+  <!-- 3. PAINT ワークスペース (クリスタEX完全同一レイアウト) -->
   <!-- ======================================================== -->
   <div id="workspace-paint" class="workspace-area active">
-    <!-- 左1列目: ツールパレット (幅 42px) -->
-    <div class="csp-main-tools">
-      <button class="tool-btn" data-tool="move" onclick="selectTool('move')" title="移動 / 手のひら (Space)"><svg viewBox="0 0 24 24"><polyline points="5 9 2 12 5 15"></polyline><polyline points="9 5 12 2 15 5"></polyline><polyline points="15 19 12 22 9 19"></polyline><polyline points="19 9 22 12 19 15"></polyline><line x1="2" y1="12" x2="22" y2="12"></line><line x1="12" y1="2" x2="12" y2="22"></line></svg></button>
-      <button class="tool-btn" data-tool="select" onclick="selectTool('select')" title="選択範囲 (M)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" stroke-dasharray="3 3"></rect></svg></button>
-      <button class="tool-btn" data-tool="eyedropper" onclick="selectTool('eyedropper')" title="スポイト (I / Alt)"><svg viewBox="0 0 24 24"><path d="M19 11l-8-8-8.5 8.5a5.5 5.5 0 0 0 7.78 7.78L19 11z"></path><path d="M5 2l5 5"></path></svg></button>
-      <button class="tool-btn active" data-tool="pen" onclick="selectTool('pen')" title="ペン (P)"><svg viewBox="0 0 24 24"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><circle cx="11" cy="11" r="2"></circle></svg></button>
-      <button class="tool-btn" data-tool="brush" onclick="selectTool('brush')" title="ブラシ / 水彩 (B)"><svg viewBox="0 0 24 24"><path d="M9.06 11.9l8.07-8.06a2.85 2.85 0 1 1 4.03 4.03l-8.06 8.08"></path><path d="M7.07 14.94l-3.9 3.9a2.5 2.5 0 0 0 .58 3.93 2.5 2.5 0 0 0 3.92-.58l3.9-3.9"></path></svg></button>
-      <button class="tool-btn" data-tool="airbrush" onclick="selectTool('airbrush')" title="エアブラシ"><svg viewBox="0 0 24 24"><path d="M12 2v4"></path><path d="M12 18v4"></path><path d="M4.93 4.93l2.83 2.83"></path><path d="M16.24 16.24l2.83 2.83"></path><path d="M2 12h4"></path><path d="M18 12h4"></path></svg></button>
-      <button class="tool-btn" data-tool="eraser" onclick="selectTool('eraser')" title="消しゴム (E)"><svg viewBox="0 0 24 24"><path d="M20 20H7L3 16C2 15 2 13 3 12L13 2L22 11L20 20Z"></path><path d="M17 17L7 7"></path></svg></button>
-      <button class="tool-btn" data-tool="bucket" onclick="selectTool('bucket')" title="塗りつぶし (G)"><svg viewBox="0 0 24 24"><path d="M19 11l-8-8-8.5 8.5a5.5 5.5 0 0 0 7.78 7.78L19 11z"></path><path d="M22 20a2 2 0 1 1-4 0c0-1.6 2-4 2-4s2 2.4 2 4z"></path></svg></button>
 
-      <!-- クリスタ特有のカラーアイコン群 (メイン色、サブ色、透明色) -->
+    <!-- [左ペイン カラム1] メインツールバー (極細 32px) -->
+    <div class="csp-main-tools">
+      <div class="tool-btn-group">
+        <button class="tool-btn" data-tool="quick" title="クイックアクセス"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></button>
+        <button class="tool-btn" data-tool="move" onclick="selectTool('move')" title="移動 / 手のひら (Space)"><svg viewBox="0 0 24 24"><polyline points="5 9 2 12 5 15"></polyline><polyline points="9 5 12 2 15 5"></polyline><polyline points="15 19 12 22 9 19"></polyline><polyline points="19 9 22 12 19 15"></polyline><line x1="2" y1="12" x2="22" y2="12"></line><line x1="12" y1="2" x2="12" y2="22"></line></svg></button>
+        <button class="tool-btn" data-tool="select" onclick="selectTool('select')" title="選択範囲 (M)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2" stroke-dasharray="3 3"></rect></svg></button>
+        <button class="tool-btn" data-tool="lasso" title="投げ縄 / 自動選択 (W)"><svg viewBox="0 0 24 24"><path d="M4 12c0-4.4 3.6-8 8-8s8 3.6 8 8c0 4.4-3.6 8-8 8-2 0-3.5-.8-5-2l-3 2"></path></svg></button>
+        <button class="tool-btn" data-tool="eyedropper" onclick="selectTool('eyedropper')" title="スポイト (I / Alt)"><svg viewBox="0 0 24 24"><path d="M19 11l-8-8-8.5 8.5a5.5 5.5 0 0 0 7.78 7.78L19 11z"></path><path d="M5 2l5 5"></path></svg></button>
+        <button class="tool-btn" data-tool="pen" onclick="selectTool('pen')" title="ペン (P)"><svg viewBox="0 0 24 24"><path d="M12 19l7-7 3 3-7 7-3-3z"></path><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path></svg></button>
+        <button class="tool-btn" data-tool="pencil" title="鉛筆"><svg viewBox="0 0 24 24"><line x1="18" y1="2" x2="22" y2="6"></line><path d="M7.5 20.5L2 22l1.5-5.5L17 3l4 4L7.5 20.5z"></path></svg></button>
+        <button class="tool-btn" data-tool="brush" onclick="selectTool('brush')" title="筆 (水彩 / 厚塗り) (B)"><svg viewBox="0 0 24 24"><path d="M9.06 11.9l8.07-8.06a2.85 2.85 0 1 1 4.03 4.03l-8.06 8.08"></path><path d="M7.07 14.94l-3.9 3.9a2.5 2.5 0 0 0 .58 3.93 2.5 2.5 0 0 0 3.92-.58l3.9-3.9"></path></svg></button>
+        <!-- エアブラシ (選択中！) -->
+        <button class="tool-btn active" data-tool="airbrush" onclick="selectTool('airbrush')" title="エアブラシ"><svg viewBox="0 0 24 24"><path d="M12 2v4"></path><path d="M12 18v4"></path><path d="M4.93 4.93l2.83 2.83"></path><path d="M16.24 16.24l2.83 2.83"></path><path d="M2 12h4"></path><path d="M18 12h4"></path></svg></button>
+        <button class="tool-btn" data-tool="eraser" onclick="selectTool('eraser')" title="消しゴム (E)"><svg viewBox="0 0 24 24"><path d="M20 20H7L3 16C2 15 2 13 3 12L13 2L22 11L20 20Z"></path><path d="M17 17L7 7"></path></svg></button>
+        <button class="tool-btn" data-tool="blend" title="色混ぜ / ぼかし (J)"><svg viewBox="0 0 24 24"><circle cx="9" cy="12" r="6" fill-opacity="0.3"></circle><circle cx="15" cy="12" r="6" fill-opacity="0.3"></circle></svg></button>
+        <button class="tool-btn" data-tool="bucket" onclick="selectTool('bucket')" title="塗りつぶし (G)"><svg viewBox="0 0 24 24"><path d="M19 11l-8-8-8.5 8.5a5.5 5.5 0 0 0 7.78 7.78L19 11z"></path><path d="M22 20a2 2 0 1 1-4 0c0-1.6 2-4 2-4s2 2.4 2 4z"></path></svg></button>
+        <button class="tool-btn" data-tool="gradient" title="グラデーション (G)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="3" y1="3" x2="21" y2="21"></line></svg></button>
+        <button class="tool-btn" data-tool="ruler" onclick="toggleSymmetryRuler()" title="定規 (U)"><svg viewBox="0 0 24 24"><line x1="2" y1="2" x2="22" y2="22"></line><line x1="6" y1="3" x2="9" y2="6"></line><line x1="12" y1="9" x2="15" y2="12"></line><line x1="18" y1="15" x2="21" y2="18"></line></svg></button>
+        <button class="tool-btn" data-tool="text" title="テキスト (T)"><svg viewBox="0 0 24 24"><polyline points="4 7 4 4 20 4 20 7"></polyline><line x1="9" y1="20" x2="15" y2="20"></line><line x1="12" y1="4" x2="12" y2="20"></line></svg></button>
+        <button class="tool-btn" data-tool="balloon" title="フキダシ"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg></button>
+        <button class="tool-btn" data-tool="object" title="操作 (O)"><svg viewBox="0 0 24 24"><path d="M3 3l7 18 3-7 7-3L3 3z"></path></svg></button>
+      </div>
+
+      <!-- クリスタ特有の3カラーチップ (メイン色・サブ色・透明色バー) -->
       <div class="csp-color-icons">
-        <div class="color-chip main-color" id="chip-main-color" onclick="activateColorSlot('main')" title="メイン描画色"></div>
+        <div class="color-chip main-color" id="chip-main-color" onclick="activateColorSlot('main')" title="メイン描画色 (Alt+クリックで色変更)"></div>
         <div class="color-chip sub-color" id="chip-sub-color" onclick="activateColorSlot('sub')" title="サブ描画色"></div>
-        <div class="color-chip transparent-color" id="chip-transparent-color" onclick="activateColorSlot('transparent')" title="透明色 (ブラシテクスチャのまま消去)">
+        <div class="color-chip transparent-color" id="chip-transparent-color" onclick="activateColorSlot('transparent')" title="透明色 (ブラシのまま消去)">
           <div class="checker-pattern"></div>
         </div>
       </div>
     </div>
 
-    <!-- 左2列目: サブツールグループ・サブツール・ツールプロパティ・ブラシサイズタブ (幅 200px) -->
-    <div class="csp-subtool-panel" id="panel-subtools">
-      <!-- 1. ツールグループタブ (Tool Group Tabs) -->
-      <div class="tool-group-tabs" id="tool-group-tabs">
-        <!-- 動的生成: [ペン] [マーカー] など -->
+    <!-- [左ペイン カラム2] サブツール ＆ カラーサークル ＆ カラーセット (幅 168px) -->
+    <div class="csp-left-column2">
+      <!-- 1. サブツールパレット (上段) -->
+      <div class="subtool-dock-container">
+        <div class="subtool-group-tab-header">
+          <div class="tab-item active">ツールグループ</div>
+          <div class="tab-arrow-right">&gt;</div>
+        </div>
+
+        <div class="subtool-category-title">
+          <svg viewBox="0 0 24 24" class="subtool-cat-icon"><path d="M12 2v4"></path><path d="M12 18v4"></path><path d="M4.93 4.93l2.83 2.83"></path><path d="M16.24 16.24l2.83 2.83"></path><path d="M2 12h4"></path><path d="M18 12h4"></path></svg>
+          <span id="subtool-category-name">エアブラシ</span>
+        </div>
+
+        <!-- 本物の波線プレビュー付きサブツールリスト -->
+        <div class="subtool-list-csp" id="subtool-list-csp">
+          <!-- 1. 柔らか (選択中) -->
+          <div class="subtool-row active" data-subtool="soft" onclick="selectSubtoolItem('soft', this)">
+            <svg class="subtool-stroke-preview" viewBox="0 0 100 24">
+              <path d="M5 14 Q 30 5, 55 13 T 95 12" fill="none" stroke="#b0c0d8" stroke-width="4.5" stroke-linecap="round" opacity="0.85" filter="blur(1px)"/>
+            </svg>
+            <span class="subtool-label">柔らか</span>
+          </div>
+          <!-- 2. スプレー -->
+          <div class="subtool-row" data-subtool="spray" onclick="selectSubtoolItem('spray', this)">
+            <svg class="subtool-stroke-preview" viewBox="0 0 100 24">
+              <circle cx="15" cy="12" r="1.5" fill="#888"/><circle cx="25" cy="8" r="1" fill="#888"/><circle cx="35" cy="14" r="1.5" fill="#888"/><circle cx="50" cy="10" r="2" fill="#888"/><circle cx="65" cy="15" r="1.2" fill="#888"/><circle cx="80" cy="11" r="1.8" fill="#888"/><circle cx="90" cy="13" r="1" fill="#888"/>
+            </svg>
+            <span class="subtool-label">スプレー</span>
+          </div>
+          <!-- 3. 飛沫 -->
+          <div class="subtool-row" data-subtool="droplets" onclick="selectSubtoolItem('droplets', this)">
+            <svg class="subtool-stroke-preview" viewBox="0 0 100 24">
+              <circle cx="20" cy="10" r="3" fill="#888"/><circle cx="45" cy="15" r="2" fill="#888"/><circle cx="70" cy="8" r="3.5" fill="#888"/><circle cx="85" cy="14" r="1.5" fill="#888"/>
+            </svg>
+            <span class="subtool-label">飛沫</span>
+          </div>
+          <!-- 4. ノイズ -->
+          <div class="subtool-row" data-subtool="noise" onclick="selectSubtoolItem('noise', this)">
+            <svg class="subtool-stroke-preview" viewBox="0 0 100 24">
+              <path d="M5 12 L15 9 L25 15 L35 10 L45 14 L55 8 L65 15 L75 11 L85 13 L95 12" fill="none" stroke="#777" stroke-width="1.5"/>
+            </svg>
+            <span class="subtool-label">ノイズ</span>
+          </div>
+          <!-- 5. トーン削り -->
+          <div class="subtool-row" data-subtool="tonescratch" onclick="selectSubtoolItem('tonescratch', this)">
+            <svg class="subtool-stroke-preview" viewBox="0 0 100 24">
+              <line x1="10" y1="5" x2="30" y2="19" stroke="#777" stroke-width="2"/><line x1="40" y1="5" x2="60" y2="19" stroke="#777" stroke-width="2"/><line x1="70" y1="5" x2="90" y2="19" stroke="#777" stroke-width="2"/>
+            </svg>
+            <span class="subtool-label">トーン削り</span>
+          </div>
+        </div>
+
+        <div class="subtool-footer-add">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+          <span>ダウンロード素材を追加する</span>
+        </div>
       </div>
 
-      <!-- 2. サブツール一覧 -->
-      <div class="subtool-list" id="subtool-list">
-        <!-- 動的生成: Gペン、丸ペン等 -->
-      </div>
+      <!-- 2. カラーサークル (中段 - クリスタEX完全同一) -->
+      <div class="color-circle-dock-container">
+        <div class="palette-tab-row">
+          <div class="tab-btn active">カラーサークル</div>
+          <div class="tab-btn">カラースライダー</div>
+        </div>
 
-      <!-- 3. ツールプロパティ -->
-      <div class="panel-section-header property-header">
-        <span id="prop-header-title">ツールプロパティ [Gペン]</span>
-      </div>
-      <div class="tool-properties">
-        <div class="prop-row">
-          <label>ブラシサイズ:</label>
-          <input type="range" id="prop-size" min="0.5" max="150" step="0.5" value="8" oninput="updateBrushProp('size', this.value)">
-          <span class="prop-val" id="prop-size-val">8.0</span>
-        </div>
-        <div class="prop-row">
-          <label>不透明度:</label>
-          <input type="range" id="prop-opacity" min="1" max="100" value="100" oninput="updateBrushProp('opacity', this.value)">
-          <span class="prop-val" id="prop-opacity-val">100%</span>
-        </div>
-        <div class="prop-row">
-          <label>硬さ (ボケ足):</label>
-          <input type="range" id="prop-hardness" min="1" max="100" value="100" oninput="updateBrushProp('hardness', this.value)">
-          <span class="prop-val" id="prop-hardness-val">100%</span>
-        </div>
-        <div class="prop-row">
-          <label>手ブレ補正:</label>
-          <input type="range" id="prop-stabilizer" min="0" max="20" value="8" oninput="updateBrushProp('stabilizer', this.value)">
-          <span class="prop-val" id="prop-stabilizer-val">8</span>
-        </div>
-        <div class="prop-row">
-          <label>筆圧感知:</label>
-          <input type="checkbox" id="prop-pressure" checked onchange="updateBrushProp('pressure', this.checked)">
+        <div class="color-circle-body">
+          <div class="color-wheel-wrapper">
+            <canvas id="color-wheel-canvas" width="144" height="144"></canvas>
+          </div>
+
+          <!-- 下部 HSV切替ラジオ ＆ カラープレビュー -->
+          <div class="color-hsv-controls">
+            <div class="hsv-radio-group">
+              <span class="hsv-label active">H</span>
+              <span class="hsv-label">S</span>
+              <span class="hsv-label">V</span>
+            </div>
+            <div class="color-sub-slots">
+              <div class="slot-box slot-main" id="circle-slot-main"></div>
+              <div class="slot-box slot-sub" id="circle-slot-sub"></div>
+              <div class="slot-box slot-trans"><div class="checker-pattern"></div></div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- 4. ブラシサイズパレットタブ (Brush Size Presets) -->
-      <div class="panel-section-header brush-size-header">
-        <span>ブラシサイズ</span>
-      </div>
-      <div class="brush-size-presets-grid" id="brush-size-presets-grid">
-        <!-- クリスタ特有のサイズプリセットグリッド: 0.5, 1.0, 1.5, 2.0, 3.0... -->
+      <!-- 3. カラーセット (下段 - クリスタEX完全同一) -->
+      <div class="color-set-dock-container">
+        <div class="palette-tab-row">
+          <div class="tab-btn active">カラーセット</div>
+          <div class="tab-btn">カラーヒストリー</div>
+        </div>
+        <div class="color-set-dropdown-row">
+          <select class="color-set-select">
+            <option>標準カラーセット</option>
+            <option>ダークトーン</option>
+            <option>パステル</option>
+          </select>
+          <div class="color-set-icons">
+            <button class="cs-btn" title="色の追加">+</button>
+            <button class="cs-btn" title="編集">&#x270E;</button>
+          </div>
+        </div>
+        <div class="color-set-grid" id="color-set-grid">
+          <!-- 16色チップグリッド動的生成 -->
+        </div>
       </div>
     </div>
 
-    <!-- 中央: メインキャンバス領域 -->
+    <!-- [左ペイン カラム3] 縦型ブラシサイズクイックスライダー (幅 24px - クリスタ特有！) -->
+    <div class="csp-vertical-brush-slider">
+      <div class="v-slider-max-label" id="v-slider-max-label">150.0 px</div>
+      <div class="v-slider-track" id="v-slider-track">
+        <div class="v-slider-fill" id="v-slider-fill"></div>
+        <div class="v-slider-thumb" id="v-slider-thumb">
+          <span class="v-slider-current-num" id="v-slider-current-num">100</span>
+        </div>
+      </div>
+      <div class="v-slider-min-label">1.0</div>
+    </div>
+
+    <!-- [中央] メインキャンバス領域 -->
     <main class="csp-canvas-container" id="canvas-container">
       <div class="canvas-tab-bar">
         <div class="canvas-tab active">
-          <span id="canvas-tab-name">無題 1 (2000 x 2000 px)</span>
-          <span class="tab-zoom-indicator" id="tab-zoom-val">100%</span>
+          <span id="canvas-tab-name">イラスト 20261023*</span>
+          <span class="tab-close-x">&times;</span>
         </div>
       </div>
 
@@ -295,248 +374,107 @@
         </div>
       </div>
 
+      <!-- キャンバス直下のステータスバー (ズーム・回転コントローラー) -->
       <footer class="canvas-status-bar">
-        <span id="status-coords">X: 0 px, Y: 0 px</span>
-        <span id="status-zoom-rot">ズーム: 100% | 回転: 0.0°</span>
-        <span id="status-canvas-res">キャンバス: 2000 x 2000 px</span>
-        <span id="status-fps" style="margin-left:auto;">60 FPS</span>
+        <div class="status-left">
+          <span id="status-zoom-percent">72.0 %</span>
+          <button class="status-btn" onclick="adjustZoom(-10)">-</button>
+          <input type="range" id="status-zoom-slider" min="10" max="800" value="72" oninput="setZoom(this.value)">
+          <button class="status-btn" onclick="adjustZoom(10)">+</button>
+          <span class="status-divider">|</span>
+          <span id="status-rot-degree">0.0 °</span>
+          <button class="status-btn" onclick="adjustRotate(-5)">&#x21BA;</button>
+          <input type="range" id="status-rot-slider" min="-180" max="180" value="0" oninput="setRotate(this.value)">
+          <button class="status-btn" onclick="adjustRotate(5)">&#x21BB;</button>
+          <button class="status-btn" onclick="toggleFlipH()" title="左右反転">&#x21C4;</button>
+          <button class="status-btn" onclick="resetRotate()" title="回転リセット">0°</button>
+        </div>
+        <div class="status-right">
+          <span id="status-res">1600 x 1200 px (72.0 dpi)</span>
+        </div>
       </footer>
     </main>
 
-    <!-- 右側: ドッキングパレット群 (幅 280px) -->
+    <!-- [右ペイン] ナビゲーター ＆ ヒストリー/レイヤー (幅 250px) -->
     <div class="csp-right-dock">
-      <!-- 1. 右上: ナビゲーターパレット (ズーム＆キャンバス回転バー) -->
+      <!-- 1. 右上: ナビゲーターパレット -->
       <div class="dock-widget widget-navigator" id="widget-navigator">
-        <div class="widget-header">
-          <div class="widget-title">
-            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
-            <span>ナビゲーター</span>
-          </div>
+        <div class="palette-tab-row">
+          <div class="tab-btn active">ナビゲーター</div>
+          <div class="tab-btn">サブビュー</div>
         </div>
         <div class="widget-body">
           <div class="nav-preview-box" id="nav-preview-box">
-            <canvas id="nav-preview-canvas" width="240" height="120"></canvas>
+            <canvas id="nav-preview-canvas" width="230" height="140"></canvas>
             <div id="nav-viewport-rect" class="nav-viewport-rect"></div>
           </div>
 
-          <!-- ズームバー -->
+          <!-- ナビゲーター下部 ズームバー -->
           <div class="nav-control-row">
-            <button class="nav-mini-btn" onclick="adjustZoom(-10)" title="ズームアウト"><svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
-            <input type="range" id="nav-zoom-slider" min="10" max="800" value="100" class="nav-slider" oninput="setZoom(this.value)">
-            <button class="nav-mini-btn" onclick="adjustZoom(10)" title="ズームイン"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
-            <span id="nav-zoom-val" class="nav-value-label" onclick="resetZoom()" title="クリックで100%リセット">100%</span>
+            <button class="nav-mini-btn" onclick="adjustZoom(-10)" title="縮小">-</button>
+            <input type="range" id="nav-zoom-slider" min="10" max="800" value="72" class="nav-slider" oninput="setZoom(this.value)">
+            <button class="nav-mini-btn" onclick="adjustZoom(10)" title="拡大">+</button>
+            <span id="nav-zoom-val" class="nav-value-label" onclick="resetZoom()">72.0</span>
             <button class="nav-text-btn" onclick="fitView()">Fit</button>
           </div>
 
-          <!-- キャンバス回転バー -->
+          <!-- ナビゲーター下部 回転バー -->
           <div class="nav-control-row">
-            <button class="nav-mini-btn" onclick="adjustRotate(-5)" title="左回転 (5°)"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><polyline points="3 3 3 8 8 8"></polyline></svg></button>
+            <button class="nav-mini-btn" onclick="adjustRotate(-5)" title="左回転">&#x21BA;</button>
             <input type="range" id="nav-rotate-slider" min="-180" max="180" value="0" class="nav-slider" oninput="setRotate(this.value)">
-            <button class="nav-mini-btn" onclick="adjustRotate(5)" title="右回転 (5°)"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><polyline points="21 3 21 8 16 8"></polyline></svg></button>
-            <span id="nav-rotate-val" class="nav-value-label" onclick="resetRotate()" title="クリックで0.0°リセット">0.0°</span>
+            <button class="nav-mini-btn" onclick="adjustRotate(5)" title="右回転">&#x21BB;</button>
+            <span id="nav-rotate-val" class="nav-value-label" onclick="resetRotate()">0.0</span>
+            <button class="nav-mini-btn" onclick="toggleFlipH()" title="左右反転">&#x21C4;</button>
+            <button class="nav-mini-btn" onclick="toggleFlipV()" title="上下反転">&#x21C5;</button>
             <button class="nav-text-btn" onclick="resetRotate()">0°</button>
           </div>
-
-          <!-- 反転・リセット -->
-          <div class="nav-control-row nav-action-buttons">
-            <button class="nav-action-btn" id="btn-flip-h" onclick="toggleFlipH()" title="左右反転 (H)">
-              <svg viewBox="0 0 24 24"><polyline points="17 8 21 12 17 16"></polyline><line x1="3" y1="12" x2="21" y2="12"></line><polyline points="7 16 3 12 7 8"></polyline></svg>
-              <span>左右反転</span>
-            </button>
-            <button class="nav-action-btn" id="btn-flip-v" onclick="toggleFlipV()" title="上下反転">
-              <svg viewBox="0 0 24 24"><polyline points="8 17 12 21 16 17"></polyline><line x1="12" y1="3" x2="12" y2="21"></line><polyline points="16 7 12 3 8 7"></polyline></svg>
-              <span>上下反転</span>
-            </button>
-            <button class="nav-action-btn" onclick="resetAllCanvasView()" title="初期状態に戻す">
-              <svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
-              <span>リセット</span>
-            </button>
-          </div>
         </div>
       </div>
 
-      <!-- 2. 右中: カラーパレット群 (カラーサークル / スライダー / カラーセット) -->
-      <div class="dock-widget widget-color-tabs" id="widget-color">
-        <div class="color-palette-subtabs">
-          <button class="color-subtab active" onclick="switchColorTab('circle')">サークル</button>
-          <button class="color-subtab" onclick="switchColorTab('slider')">スライダー</button>
-          <button class="color-subtab" onclick="switchColorTab('set')">カラーセット</button>
+      <!-- 2. 右下: ヒストリー ＆ レイヤーパレット -->
+      <div class="dock-widget widget-history-layers" id="widget-layers">
+        <div class="palette-tab-row">
+          <div class="tab-btn" onclick="switchRightTab('layers')">レイヤー</div>
+          <div class="tab-btn active" onclick="switchRightTab('history')">ヒストリー</div>
         </div>
 
-        <div class="widget-body">
-          <!-- ビュー1: カラーサークル -->
-          <div id="colortab-circle" class="color-subpane active">
-            <div class="color-wheel-container">
-              <canvas id="color-wheel-canvas" width="180" height="180"></canvas>
+        <!-- ヒストリータブビュー (クリスタEXスクリーンショット完全一致！) -->
+        <div id="tabview-history" class="right-tabview active">
+          <div class="history-list-header">
+            <span>イラスト 20261023</span>
+          </div>
+          <div class="history-item-list" id="history-item-list">
+            <div class="history-row">
+              <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+              <span>新規作成</span>
             </div>
-            <div class="color-values-row">
-              <div class="color-preview-box" id="current-color-preview"></div>
-              <div class="color-hex-text" id="color-hex-val">#000000</div>
+            <div class="history-row active">
+              <svg viewBox="0 0 24 24"><path d="M12 2v4"></path><path d="M12 18v4"></path><path d="M4.93 4.93l2.83 2.83"></path><path d="M16.24 16.24l2.83 2.83"></path></svg>
+              <span>エアブラシ / エアブラシ / 柔らか</span>
             </div>
           </div>
-
-          <!-- ビュー2: カラースライダー (RGB / HSV) -->
-          <div id="colortab-slider" class="color-subpane">
-            <div class="slider-group">
-              <div class="slider-row"><label>R:</label><input type="range" id="sl-r" min="0" max="255" oninput="updateRgbSlider()"><span id="lbl-r">0</span></div>
-              <div class="slider-row"><label>G:</label><input type="range" id="sl-g" min="0" max="255" oninput="updateRgbSlider()"><span id="lbl-g">0</span></div>
-              <div class="slider-row"><label>B:</label><input type="range" id="sl-b" min="0" max="255" oninput="updateRgbSlider()"><span id="lbl-b">0</span></div>
-            </div>
-          </div>
-
-          <!-- ビュー3: クリスタ標準カラーセット -->
-          <div id="colortab-set" class="color-subpane">
-            <div class="color-set-grid" id="color-set-grid"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 3. 右下: レイヤーパレット -->
-      <div class="dock-widget widget-layers" id="widget-layers">
-        <div class="widget-header">
-          <div class="widget-title">
-            <svg viewBox="0 0 24 24"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
-            <span>レイヤー</span>
-          </div>
-          <div class="widget-tools">
-            <button class="widget-mini-icon-btn" onclick="addNewLayer()" title="新規ラスターレイヤー (Ctrl+Shift+N)">＋</button>
-            <button class="widget-mini-icon-btn" onclick="addNewDraftLayer()" title="下描きレイヤー追加">✏</button>
-            <button class="widget-mini-icon-btn" onclick="duplicateActiveLayer()" title="レイヤー複製 (Ctrl+J)">📄</button>
-            <button class="widget-mini-icon-btn" onclick="mergeDownLayer()" title="下に結合 (Ctrl+E)">⬇</button>
-            <button class="widget-mini-icon-btn" onclick="deleteActiveLayer()" title="レイヤー削除">🗑</button>
-          </div>
         </div>
 
-        <!-- クリスタ特有のレイヤープロパティバー -->
-        <div class="layer-control-bar">
-          <select id="layer-blend-mode" class="select-control" onchange="changeLayerBlendMode(this.value)">
-            <option value="source-over">通常</option>
-            <option value="multiply">乗算</option>
-            <option value="screen">スクリーン</option>
-            <option value="overlay">オーバーレイ</option>
-            <option value="lighter">加算 (発光)</option>
-            <option value="darken">比較 (暗)</option>
-            <option value="lighten">比較 (明)</option>
-          </select>
-          <div class="layer-opacity-wrap">
-            <label>不透明度:</label>
-            <input type="range" id="layer-opacity-slider" min="0" max="100" value="100" oninput="changeLayerOpacity(this.value)">
-            <span id="layer-opacity-val">100%</span>
+        <!-- レイヤータブビュー -->
+        <div id="tabview-layers" class="right-tabview">
+          <div class="layers-toolbar">
+            <button class="layer-bar-btn" onclick="addNewLayer()" title="新規ラスターレイヤー">+</button>
+            <button class="layer-bar-btn" onclick="deleteActiveLayer()" title="レイヤー削除">&#x1F5D1;</button>
+            <button class="layer-bar-btn" onclick="duplicateActiveLayer()" title="複製">&#x2398;</button>
+            <button class="layer-bar-btn" onclick="mergeDownLayer()" title="下のレイヤーと結合">&#x2935;</button>
           </div>
+          <div class="layer-item-list" id="layer-item-list"></div>
         </div>
-
-        <!-- クリッピング ＆ 透明ピクセルロック -->
-        <div class="layer-action-strip">
-          <button class="strip-btn" id="btn-clip-layer" onclick="toggleClipping()" title="下のレイヤーでクリッピング">
-            <svg viewBox="0 0 24 24"><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-            <span>クリッピング</span>
-          </button>
-          <button class="strip-btn" id="btn-lock-alpha" onclick="toggleAlphaLock()" title="透明ピクセルをロック">
-            <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-            <span>透明ロック</span>
-          </button>
-        </div>
-
-        <!-- レイヤー一覧 -->
-        <div class="layers-list" id="layers-list"></div>
       </div>
     </div>
-  </div>
 
-  <!-- ======================================================== -->
-  <!-- 4. ポータル管理画面 (CLIP STUDIO Portal Mode) -->
-  <!-- ======================================================== -->
-  <div id="workspace-portal" class="workspace-area">
-    <div class="app-layout">
-      <aside class="sidebar">
-        <div class="brand">
-          <span class="brand-title">CLIP GIMP STUDIO</span>
-        </div>
-        <div class="launch-action-box">
-          <button class="btn-launch-primary" onclick="switchAppMode('paint')">
-            <span class="launch-main">PAINT を起動</span>
-          </button>
-        </div>
-        <nav class="sidebar-nav">
-          <ul class="nav-list">
-            <li class="nav-item active" onclick="switchTab('works')"><span>作品管理</span></li>
-            <li class="nav-item" onclick="switchTab('materials')"><span>素材管理</span></li>
-            <li class="nav-item" onclick="switchTab('gimp-profile')"><span>GIMP クリスタ化設定</span></li>
-            <li class="nav-item" onclick="switchTab('tips')"><span>TIPS & 使い方</span></li>
-            <li class="nav-item" onclick="switchTab('cloud')"><span>クラウド / GitHub同期</span></li>
-          </ul>
-        </nav>
-      </aside>
-
-      <main class="main-content">
-        <header class="top-header">
-          <h1 class="page-title">作品一覧</h1>
-          <div class="header-right">
-            <button class="btn btn-secondary" onclick="openWorksFolder()">保存フォルダー</button>
-            <button class="btn btn-primary" onclick="openNewCanvasModal()">新規作成</button>
-          </div>
-        </header>
-
-        <div class="view-container">
-          <section id="view-works" class="tab-pane active">
-            <div class="works-grid" id="works-grid"></div>
-          </section>
-          <section id="view-materials" class="tab-pane">
-            <div class="materials-grid" id="materials-grid"></div>
-          </section>
-          <section id="view-gimp-profile" class="tab-pane">
-            <button class="btn btn-large btn-accent" onclick="applyAllGimpSettings()">すべてのクリスタ風設定を一括適用する</button>
-            <div id="apply-status" class="status-message"></div>
-          </section>
-          <section id="view-tips" class="tab-pane">
-            <p>クリスタと同じ操作（B=ブラシ, E=消しゴム, H=反転, ナビゲーターでのズーム・回転）で直感的にイラストを描けます。</p>
-          </section>
-          <section id="view-cloud" class="tab-pane">
-            <button class="btn btn-primary" onclick="pushToGitHub()">drkai-lab に Push する</button>
-            <div id="git-push-status" class="status-message"></div>
-          </section>
-        </div>
-      </main>
+    <!-- [右端] 極細の素材・クイックアクセスバー (幅 24px) -->
+    <div class="csp-far-right-bar">
+      <button class="side-dock-btn" title="素材 [クイックアクセス]"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg></button>
+      <button class="side-dock-btn" title="素材 [ダウンロード]"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg></button>
+      <button class="side-dock-btn" title="レイヤープロパティ"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg></button>
     </div>
-  </div>
 
-  <!-- 新規キャンバス作成モーダル -->
-  <div id="new-canvas-modal" class="modal-overlay">
-    <div class="modal-dialog">
-      <div class="modal-header">
-        <h2>新規作品の作成</h2>
-        <button class="btn-close" onclick="closeNewCanvasModal()">&times;</button>
-      </div>
-      <div class="modal-body">
-        <div class="form-group">
-          <label>作品名:</label>
-          <input type="text" id="canvas-title" class="input-control" value="無題 1">
-        </div>
-        <div class="form-row">
-          <div class="form-group col">
-            <label>幅 (px):</label>
-            <input type="number" id="canvas-width" class="input-control" value="2000">
-          </div>
-          <div class="form-group col">
-            <label>高さ (px):</label>
-            <input type="number" id="canvas-height" class="input-control" value="2000">
-          </div>
-        </div>
-        <div class="form-group">
-          <label>プリセット:</label>
-          <select id="canvas-preset" class="select-control" onchange="applyPreset(this.value)">
-            <option value="square">正方形 (2000 x 2000)</option>
-            <option value="a4-350">A4 イラスト (350dpi / 2894 x 4093)</option>
-            <option value="b5-350">B5 同人誌 (350dpi / 2508 x 3541)</option>
-            <option value="fhd">FHD Web用 (1920 x 1080)</option>
-          </select>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" onclick="closeNewCanvasModal()">キャンセル</button>
-        <button class="btn btn-primary" onclick="createNewCanvas()">キャンバスを作成</button>
-      </div>
-    </div>
   </div>
 
   <script src="ad-engine.bundle.js"></script>

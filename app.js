@@ -1500,3 +1500,133 @@ function openSplashScreen() {
     }
   }
 }
+
+// ==========================================
+// クリスタEX完全再現 UIバインディング
+// ==========================================
+function selectSubtoolItem(type, element) {
+  document.querySelectorAll('.subtool-row').forEach(row => row.classList.remove('active'));
+  if (element) element.classList.add('active');
+
+  const historyList = document.getElementById('history-item-list');
+  if (historyList) {
+    const label = element ? element.querySelector('.subtool-label').textContent : type;
+    historyList.innerHTML = `
+      <div class="history-row"><svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg><span>新規作成</span></div>
+      <div class="history-row active"><svg viewBox="0 0 24 24"><path d="M12 2v4"></path><path d="M12 18v4"></path></svg><span>エアブラシ / エアブラシ / ${label}</span></div>
+    `;
+  }
+}
+
+function switchRightTab(tab) {
+  const viewHistory = document.getElementById('tabview-history');
+  const viewLayers = document.getElementById('tabview-layers');
+  const tabBtns = document.querySelectorAll('.widget-history-layers .tab-btn');
+
+  if (tab === 'history') {
+    if (viewHistory) viewHistory.classList.add('active');
+    if (viewLayers) viewLayers.classList.remove('active');
+    if (tabBtns[0]) tabBtns[0].classList.remove('active');
+    if (tabBtns[1]) tabBtns[1].classList.add('active');
+  } else {
+    if (viewHistory) viewHistory.classList.remove('active');
+    if (viewLayers) viewLayers.classList.add('active');
+    if (tabBtns[0]) tabBtns[0].classList.add('active');
+    if (tabBtns[1]) tabBtns[1].classList.remove('active');
+  }
+}
+
+function initVerticalBrushSlider() {
+  const track = document.getElementById('v-slider-track');
+  const thumb = document.getElementById('v-slider-thumb');
+  const fill = document.getElementById('v-slider-fill');
+  const num = document.getElementById('v-slider-current-num');
+  if (!track || !thumb) return;
+
+  function setSliderFromY(clientY) {
+    const rect = track.getBoundingClientRect();
+    const ratio = Math.max(0, Math.min(1, (rect.bottom - clientY) / rect.height));
+    const size = Math.round(1 + ratio * 149);
+    studioState.brushSize = size;
+    thumb.style.bottom = `${ratio * 100}%`;
+    fill.style.height = `${ratio * 100}%`;
+    if (num) num.textContent = size;
+  }
+
+  let isDragging = false;
+  track.addEventListener('mousedown', e => {
+    isDragging = true;
+    setSliderFromY(e.clientY);
+  });
+  window.addEventListener('mousemove', e => {
+    if (isDragging) setSliderFromY(e.clientY);
+  });
+  window.addEventListener('mouseup', () => {
+    isDragging = false;
+  });
+}
+
+function initColorSetGrid() {
+  const grid = document.getElementById('color-set-grid');
+  if (!grid) return;
+
+  const extendedColors = [
+    '#000000', '#222222', '#444444', '#666666', '#888888', '#aaaaaa', '#cccccc', '#ffffff',
+    '#800000', '#ff0000', '#ff6600', '#ffcc00', '#ffff00', '#88ff00', '#00ff00', '#00ff88',
+    '#00ffff', '#0088ff', '#0000ff', '#8800ff', '#ff00ff', '#ff0088', '#8b4513', '#d2b48c',
+    '#ffe4c4', '#f5deb3', '#ffc0cb', '#ffb6c1', '#708090', '#2f4f4f', '#191970', '#4b0082'
+  ];
+
+  grid.innerHTML = '';
+  extendedColors.forEach(color => {
+    const chip = document.createElement('div');
+    chip.className = 'set-chip';
+    chip.style.backgroundColor = color;
+    chip.title = color;
+    chip.onclick = () => {
+      studioState.mainColor = color;
+      const chipMain = document.getElementById('chip-main-color');
+      if (chipMain) chipMain.style.backgroundColor = color;
+      const slotMain = document.getElementById('circle-slot-main');
+      if (slotMain) slotMain.style.backgroundColor = color;
+    };
+    grid.appendChild(chip);
+  });
+}
+
+function drawInitialAirbrushStroke() {
+  // ユーザーの提示したスクリーンショット（クリスタEX）の中央にある
+  // 滑らかな黒いエアブラシの波線ストロークをキャンバス初期化時に美しく描画
+  setTimeout(() => {
+    if (studioState.layers.length > 0) {
+      const activeLayer = studioState.layers.find(l => l.id === studioState.activeLayerId) || studioState.layers[0];
+      if (activeLayer && activeLayer.ctx) {
+        const ctx = activeLayer.ctx;
+        ctx.save();
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.strokeStyle = 'rgba(20, 20, 20, 0.7)';
+        ctx.shadowColor = 'rgba(20, 20, 20, 0.4)';
+        ctx.shadowBlur = 25;
+        ctx.lineWidth = 45;
+
+        ctx.beginPath();
+        ctx.moveTo(600, 480);
+        ctx.bezierCurveTo(750, 420, 850, 620, 1050, 600);
+        ctx.stroke();
+
+        ctx.restore();
+        updateNavigatorPreview();
+      }
+    }
+  }, 400);
+}
+
+// 起動時初期化拡張
+const originalInit = window.onload;
+window.addEventListener('DOMContentLoaded', () => {
+  initVerticalBrushSlider();
+  initColorSetGrid();
+  drawInitialAirbrushStroke();
+});
+
